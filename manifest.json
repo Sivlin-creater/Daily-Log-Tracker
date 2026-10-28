@@ -1,0 +1,24 @@
+{
+  "short_name": "WorkTracker",
+  "name": "Daily Work & Life Tracker",
+  "description": "Offline personal daily tracker for work hours, meals, expenses, and notes.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='128' fill='%23171717'/><circle cx='256' cy='256' r='180' stroke='%232563eb' stroke-width='32' fill='none'/><polyline points='256 140 256 256 330 330' stroke='%232563eb' stroke-width='32' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='48' fill='%23171717'/><circle cx='96' cy='96' r='68' stroke='%232563eb' stroke-width='14' fill='none'/><polyline points='96 52 96 96 124 124' stroke='%232563eb' stroke-width='14' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
