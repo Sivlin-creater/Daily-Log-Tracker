@@ -2,6 +2,11 @@
 
 A responsive, single-file personal tracking web application built with vanilla HTML5, CSS3, and JavaScript. Designed for offline use on smartphones and laptops to monitor work hours, daily meal logging, personal expenses, and field notes with photo attachments.
 
+<p align="center">
+  <img src="image1.png" alt="Daily Tracker View" width="340" style="margin-right: 10px;">
+  <img src="image2.png" alt="Work Notes View" width="340">
+</p>
+
 ---
 
 ## 🌟 Key Features
@@ -23,8 +28,6 @@ A responsive, single-file personal tracking web application built with vanilla H
 ## 🚀 Live Demo & Deployment
 
 This application requires no build steps (no Node.js, Webpack, or npm). It runs directly in any modern browser.
-![Image](https://github.com/Sivlin-creater/Daily-Log-Tracker/image1.png)
-![Image](https://github.com/Sivlin-creater/Daily-Log-Tracker/image2.png)
 
 ### Deploy to GitHub Pages:
 1. Fork or clone this repository.
@@ -55,6 +58,8 @@ Once added, the application opens fullscreen and functions completely offline[ci
 ```text
 ├── index.html        # Complete single-file application (UI, CSS, JavaScript)
 ├── manifest.json     # Web App Manifest for mobile fullscreen installation
+├── image1.png        # Screenshot preview (Tracker view)
+├── image2.png        # Screenshot preview (Notes & Photos view)
 └── .gitignore        # Git ignore rules
 
 Creator: Sivlin Chhay
