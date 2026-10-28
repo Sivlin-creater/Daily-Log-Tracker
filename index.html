@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Daily Work & Life Tracker</title>
+  <!-- Google Font Inter + Khmer Support -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.js"></script>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --card: rgba(23, 23, 23, 0.95);
+      --card-border: rgba(45, 45, 45, 0.8);
+      --text: #f5f5f5;
+      --text-muted: #a3a3a3;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --emerald: #059669;
+      --amber: #d97706;
+      --rose: #e11d48;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', 'Kantumruy Pro', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .container {
+      width: 100%;
+      max-width: 448px;
+      margin: 0 auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 1rem 5.5rem;
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #262626; border-radius: 9999px; }
+
+    /* Top Navigation Tabs */
+    .tab-nav {
+      display: flex;
+      background: #171717;
+      border: 1px solid #262626;
+      border-radius: 1rem;
+      padding: 0.25rem;
+      margin-bottom: 0.85rem;
+      gap: 0.25rem;
+    }
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.55rem;
+      border-radius: 0.75rem;
+      border: none;
+      background: transparent;
+      color: #a3a3a3;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-btn.active {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+
+    /* Top Bar */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(38, 38, 38, 0.8);
+      margin-bottom: 0.75rem;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .icon-btn {
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      background: #171717;
+      border: 1px solid #262626;
+      color: #d4d4d4;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .icon-btn:hover { background: #262626; }
+    .icon-btn.rose { color: #fb7185; }
+    .icon-btn.emerald { color: #34d399; }
+    .icon-btn.blue { color: #60a5fa; }
+    
+    .lang-select {
+      background: #171717;
+      color: #e5e5e5;
+      border: 1px solid #262626;
+      border-radius: 0.75rem;
+      padding: 0.4rem 0.4rem;
+      font-size: 0.75rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: #171717;
+      border: 1px solid #262626;
+      color: #a3a3a3;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      background: #737373;
+    }
+    .status-badge.active {
+      background: rgba(6, 78, 59, 0.6);
+      border-color: #065f46;
+      color: #34d399;
+    }
+    .status-badge.active .status-dot {
+      background: #34d399;
+      box-shadow: 0 0 6px #34d399;
+    }
+
+    /* Calendar & Timeline */
+    .calendar-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+    .grid-7 {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.25rem;
+      text-align: center;
+    }
+    .day-name {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #737373;
+      padding-bottom: 0.25rem;
+    }
+    .day-cell {
+      position: relative;
+      height: 2.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.65rem;
+      font-size: 0.75rem;
+      background: transparent;
+      border: none;
+      color: #d4d4d4;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .day-cell:hover { background: #262626; }
+    .day-cell.selected {
+      background: var(--blue) !important;
+      color: white !important;
+      font-weight: bold;
+    }
+    .day-cell.today {
+      background: #262626;
+      border: 1px solid rgba(96, 165, 250, 0.5);
+      color: #60a5fa;
+      font-weight: 600;
+    }
+    .dot-box {
+      position: absolute;
+      bottom: 2px;
+      display: flex;
+      gap: 2px;
+    }
+    .mini-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 9999px;
+    }
+    .mini-dot.blue { background: #60a5fa; }
+    .mini-dot.green { background: #34d399; }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+    .action-btn {
+      border: none;
+      border-radius: 1rem;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      color: white;
+      cursor: pointer;
+      text-align: left;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: transform 0.1s ease, filter 0.15s ease;
+    }
+    .action-btn:active { transform: scale(0.97); }
+    .action-btn-header {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.2rem;
+    }
+    .action-btn-sub {
+      font-size: 0.7rem;
+      opacity: 0.9;
+    }
+    .btn-blue { background: #2563eb; }
+    .btn-green { background: #059669; }
+    .btn-amber { background: #d97706; }
+    .btn-slate { background: #262626; border: 1px solid #404040; }
+    .btn-rose { background: #e11d48; }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #1f1f1f;
+      margin-bottom: 0.6rem;
+    }
+    .timeline-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #a3a3a3;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .timeline-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 9999px;
+      background: #262626;
+      color: #d4d4d4;
+      font-weight: normal;
+    }
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      overflow-y: auto;
+      max-height: 380px;
+      padding-right: 2px;
+    }
+    .timeline-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem;
+      border-radius: 1rem;
+      background: rgba(23, 23, 23, 0.7);
+      border: 1px solid rgba(38, 38, 38, 0.8);
+      transition: border-color 0.15s ease;
+    }
+    .timeline-card:hover { border-color: #525252; }
+    .time-stamp {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #a3a3a3;
+      width: 48px;
+      flex-shrink: 0;
+    }
+    .entry-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.65rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 9999px;
+      border: 1px solid transparent;
+      font-weight: 500;
+    }
+    .badge-blue { background: rgba(30, 58, 138, 0.6); border-color: rgba(37, 99, 235, 0.5); color: #93c5fd; }
+    .badge-green { background: rgba(6, 78, 59, 0.6); border-color: rgba(5, 150, 105, 0.5); color: #6ee7b7; }
+    .badge-amber { background: rgba(120, 53, 15, 0.6); border-color: rgba(217, 119, 6, 0.5); color: #fcd34d; }
+    .badge-slate { background: #262626; border-color: #404040; color: #d4d4d4; }
+    .badge-cyan { background: rgba(22, 78, 99, 0.6); border-color: rgba(6, 182, 212, 0.5); color: #67e8f9; }
+
+    /* Page 2: Work Notes & Images */
+    .notes-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .note-post {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 1.25rem;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .note-post-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .note-post-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: white;
+    }
+    .note-post-date {
+      font-size: 0.65rem;
+      color: #737373;
+      margin-top: 0.15rem;
+    }
+    .note-post-body {
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: #d4d4d4;
+      white-space: pre-wrap;
+    }
+    .note-image-preview {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 0.75rem;
+      border: 1px solid #262626;
+      margin-top: 0.25rem;
+    }
+
+    /* Translation Bar inside Note Editor */
+    .translate-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #111;
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid #262626;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Bottom Bar */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 10, 10, 0.95);
+      border-top: 1px solid #262626;
+      backdrop-filter: blur(10px);
+      padding: 0.75rem 1rem;
+      z-index: 30;
+    }
+    .footer-inner {
+      max-width: 448px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+    .footer-metrics {
+      display: flex;
+      gap: 1rem;
+    }
+    .metric-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 50;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-card {
+      background: #171717;
+      border: 1px solid #262626;
+      border-radius: 1.5rem;
+      width: 100%;
+      max-width: 380px;
+      padding: 1.25rem;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+    }
+    .form-group {
+      margin-bottom: 0.75rem;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #a3a3a3;
+      margin-bottom: 0.25rem;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid #262626;
+      border-radius: 0.75rem;
+      padding: 0.55rem 0.75rem;
+      color: white;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--blue);
+    }
+
+    .page-section { display: none; }
+    .page-section.active { display: flex; flex-direction: column; flex: 1; }
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      header, .no-print, button, #clockToggleBtn, .calendar-card, footer, .modal-overlay, .action-grid, .tab-nav {
+        display: none !important;
+      }
+      #printReportSection { display: block !important; }
+    }
+    #printReportSection { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Print View -->
+  <div id="printReportSection" style="padding: 2rem; background: white; color: #111;">
+    <div style="border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between;">
+      <div>
+        <h1 style="font-size: 1.5rem; font-weight: bold;">Work & Expense Report</h1>
+        <p id="printReportSubtitle" style="font-size: 0.75rem; color: #666;"></p>
+      </div>
+      <p id="printReportRange" style="font-size: 0.85rem; font-weight: bold;"></p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+      <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 0.5rem;">
+        <span style="font-size: 0.65rem; text-transform: uppercase; color: #666;">Day Hours</span>
+        <p id="printDayHours" style="font-size: 1.1rem; font-weight: bold;">0.0h</p>
+      </div>
+      <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 0.5rem;">
+        <span style="font-size: 0.65rem; text-transform: uppercase; color: #666;">Day Spent</span>
+        <p id="printDaySpent" style="font-size: 1.1rem; font-weight: bold; color: #059669;">$0.00</p>
+      </div>
+      <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 0.5rem;">
+        <span style="font-size: 0.65rem; text-transform: uppercase; color: #666;">Month Hours</span>
+        <p id="printMonthHours" style="font-size: 1.1rem; font-weight: bold;">0.0h</p>
+      </div>
+      <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 0.5rem;">
+        <span style="font-size: 0.65rem; text-transform: uppercase; color: #666;">Month Spent</span>
+        <p id="printMonthSpent" style="font-size: 1.1rem; font-weight: bold; color: #059669;">$0.00</p>
+      </div>
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem; border: 1px solid #ccc;">
+      <thead>
+        <tr style="background: #f3f4f6; border-bottom: 1px solid #ccc;">
+          <th style="padding: 0.4rem; border-right: 1px solid #ccc; text-align: left;">Date</th>
+          <th style="padding: 0.4rem; border-right: 1px solid #ccc; text-align: left;">Time</th>
+          <th style="padding: 0.4rem; border-right: 1px solid #ccc; text-align: left;">Type</th>
+          <th style="padding: 0.4rem; border-right: 1px solid #ccc; text-align: left;">Category</th>
+          <th style="padding: 0.4rem; border-right: 1px solid #ccc; text-align: left;">Description</th>
+          <th style="padding: 0.4rem; border-right: 1px solid #ccc; text-align: right;">Cost ($)</th>
+          <th style="padding: 0.4rem; border-right: 1px solid #ccc; text-align: right;">Hours</th>
+          <th style="padding: 0.4rem; text-align: left;">Notes</th>
+        </tr>
+      </thead>
+      <tbody id="printTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- App Main Screen -->
+  <div class="container">
+
+    <!-- Top Tab Bar -->
+    <nav class="tab-nav no-print">
+      <button id="tabTrackerBtn" class="tab-btn active" onclick="switchPage('tracker')">
+        <i data-lucide="clock" style="width: 1rem; height: 1rem;"></i>
+        <span id="tabTrackerLabel">Daily Tracker</span>
+      </button>
+      <button id="tabNotebookBtn" class="tab-btn" onclick="switchPage('notebook')">
+        <i data-lucide="book-open" style="width: 1rem; height: 1rem;"></i>
+        <span id="tabNotebookLabel">Work Notes & Images</span>
+      </button>
+    </nav>
+
+    <!-- Header -->
+    <header class="no-print">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <i data-lucide="calendar" style="width: 1rem; height: 1rem; color: #a3a3a3;"></i>
+          <h1 id="headerDateDisplay" style="font-size: 1rem; font-weight: 600;">Today</h1>
+        </div>
+        <p id="headerSubDate" style="font-size: 0.75rem; color: #737373;">Loading...</p>
+      </div>
+
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <select id="langSwitcher" onchange="changeLanguage(this.value)" class="lang-select" title="Change Language">
+          <option value="en">English</option>
+          <option value="km">ភាសាខ្មែរ</option>
+          <option value="zh">中文</option>
+        </select>
+        <!-- Notification Toggle -->
+        <button id="notifyBtn" onclick="toggleNotifications()" class="icon-btn" title="Notifications">
+          <i id="notifyIcon" data-lucide="bell-off" style="width: 1rem; height: 1rem;"></i>
+        </button>
+        <!-- Shift Status Badge -->
+        <div id="statusBadge" class="status-badge">
+          <span id="statusDot" class="status-dot"></span>
+          <span id="statusText">Off</span>
+        </div>
+        <!-- Settings -->
+        <button onclick="openModal('backupModal')" class="icon-btn" title="Settings & Backup">
+          <i data-lucide="settings" style="width: 1rem; height: 1rem;"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ================= PAGE 1: DAILY TRACKER ================= -->
+    <div id="pageTracker" class="page-section active">
+      <!-- Calendar View -->
+      <section class="calendar-card">
+        <div class="calendar-header">
+          <button onclick="navigateMonth(-1)" class="icon-btn" style="padding: 0.25rem;">
+            <i data-lucide="chevron-left" style="width: 1rem; height: 1rem;"></i>
+          </button>
+          <span id="calendarMonthLabel" style="font-size: 0.85rem; font-weight: 600;">Month YYYY</span>
+          <div style="display: flex; gap: 0.25rem;">
+            <button id="todayBtnLabel" onclick="goToToday()" class="icon-btn" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">Today</button>
+            <button onclick="navigateMonth(1)" class="icon-btn" style="padding: 0.25rem;">
+              <i data-lucide="chevron-right" style="width: 1rem; height: 1rem;"></i>
+            </button>
+          </div>
+        </div>
+        <div id="weekHeaderRow" class="grid-7 day-name"></div>
+        <div id="calendarGrid" class="grid-7"></div>
+      </section>
+
+      <!-- Action Buttons -->
+      <section class="action-grid">
+        <button id="clockToggleBtn" onclick="toggleClockInOut()" class="action-btn btn-blue">
+          <div class="action-btn-header">
+            <i id="clockBtnIcon" data-lucide="clock" style="width: 1rem; height: 1rem;"></i>
+            <span id="clockBtnText">CLOCK IN</span>
+          </div>
+          <span id="clockSubtext" class="action-btn-sub">Start shift timer</span>
+        </button>
+
+        <button onclick="openAddEntryModal('meal')" class="action-btn btn-green">
+          <div class="action-btn-header">
+            <i data-lucide="utensils" style="width: 1rem; height: 1rem;"></i>
+            <span id="mealBtnText">+ MEAL</span>
+          </div>
+          <span id="mealBtnSub" class="action-btn-sub">Log food & drinks</span>
+        </button>
+
+        <button onclick="openAddEntryModal('expense')" class="action-btn btn-amber">
+          <div class="action-btn-header">
+            <i data-lucide="receipt" style="width: 1rem; height: 1rem;"></i>
+            <span id="expenseBtnText">+ EXPENSE</span>
+          </div>
+          <span id="expenseBtnSub" class="action-btn-sub">Money spent</span>
+        </button>
+
+        <button onclick="openAddEntryModal('note')" class="action-btn btn-slate">
+          <div class="action-btn-header">
+            <i data-lucide="file-edit" style="width: 1rem; height: 1rem;"></i>
+            <span id="noteBtnText">+ NOTE</span>
+          </div>
+          <span id="noteBtnSub" class="action-btn-sub">Shift notes / tasks</span>
+        </button>
+      </section>
+
+      <!-- Daily Timeline -->
+      <section style="flex: 1; display: flex; flex-direction: column;">
+        <div class="timeline-header">
+          <div class="timeline-title">
+            <span id="timelineTitleLabel">Daily Timeline</span>
+            <span id="selectedDateBadge" class="timeline-badge">Selected Date</span>
+          </div>
+          <span id="entryCountBadge" style="font-size: 0.75rem; color: #737373; font-family: monospace;">0 events</span>
+        </div>
+        <div id="timelineList" class="timeline-list"></div>
+      </section>
+    </div>
+
+    <!-- ================= PAGE 2: WORK NOTES & IMAGES ================= -->
+    <div id="pageNotebook" class="page-section">
+      <!-- Search & New Note Header -->
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.85rem;">
+        <input type="text" id="notesSearchInput" oninput="renderWorkNotes()" placeholder="Search work notes..." class="form-input" style="flex: 1; padding: 0.45rem 0.65rem; font-size: 0.8rem;">
+        <button onclick="openNoteEditorModal()" class="action-btn btn-blue" style="padding: 0.45rem 0.75rem; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.35rem; border-radius: 0.75rem;">
+          <i data-lucide="plus" style="width: 0.9rem; height: 0.9rem;"></i>
+          <span id="newDocBtnLabel">Write Note</span>
+        </button>
+      </div>
+
+      <!-- Notes Feed -->
+      <div id="workNotesList" class="notes-container"></div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Summary Bar (For Tracker Page) -->
+  <footer id="mainFooter" class="no-print">
+    <div class="footer-inner">
+      <div class="footer-metrics">
+        <div class="metric-item">
+          <i data-lucide="clock" style="width: 0.9rem; height: 0.9rem; color: #60a5fa;"></i>
+          <span id="footerHoursLabel" style="color: #a3a3a3;">Hours:</span>
+          <span id="dailyHoursTotal" style="font-weight: 600; font-family: monospace;">0.0h</span>
+        </div>
+        <div class="metric-item">
+          <i data-lucide="banknote" style="width: 0.9rem; height: 0.9rem; color: #34d399;"></i>
+          <span id="footerSpentLabel" style="color: #a3a3a3;">Spent:</span>
+          <span id="dailyExpenseTotal" style="font-weight: 600; color: #6ee7b7; font-family: monospace;">$0.00</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; color: #a3a3a3;">
+        <i data-lucide="hard-drive" style="width: 0.85rem; height: 0.85rem; color: #34d399;"></i>
+        <span id="footerOfflineLabel">Offline Saved</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal: Daily Entry Form -->
+  <div id="entryModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 id="modalTitle" style="font-size: 1rem; font-weight: 600;">Add Entry</h3>
+        <button type="button" onclick="closeModal('entryModal')" class="icon-btn" style="border: none; background: transparent;">
+          <i data-lucide="x" style="width: 1.25rem; height: 1.25rem;"></i>
+        </button>
+      </div>
+
+      <form id="entryForm" onsubmit="handleSaveEntry(event)">
+        <input type="hidden" id="formEntryId">
+        <input type="hidden" id="formEntryType">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <div>
+            <label id="formTimeLabel" class="form-label">Time</label>
+            <input type="time" id="formTime" required class="form-input">
+          </div>
+          <div id="categoryContainer">
+            <label id="formCategoryLabel" class="form-label">Category</label>
+            <select id="formCategory" class="form-select">
+              <option value="Food">Food / Meal</option>
+              <option value="Coffee">Coffee / Drink</option>
+              <option value="Transport">Transport</option>
+              <option value="Supplies">Supplies</option>
+              <option value="Groceries">Groceries</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label id="formTitleLabel" class="form-label">Description</label>
+          <input type="text" id="formTitle" required class="form-input">
+        </div>
+
+        <div class="form-group" id="amountContainer">
+          <label id="formAmountLabel" class="form-label">Cost / Amount ($)</label>
+          <input type="number" step="0.01" min="0" id="formAmount" placeholder="0.00" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label id="formNotesLabel" class="form-label">Notes (Optional)</label>
+          <textarea id="formNotes" rows="2" class="form-textarea" style="resize: none;"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" id="modalCancelBtn" onclick="closeModal('entryModal')" class="action-btn btn-slate" style="flex: 1; align-items: center; justify-content: center; padding: 0.6rem;">
+            Cancel
+          </button>
+          <button type="submit" id="modalSaveBtn" class="action-btn btn-blue" style="flex: 1; align-items: center; justify-content: center; padding: 0.6rem;">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Work Note & Photo Creator (Page 2) with Online Translation Support -->
+  <div id="noteEditorModal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 420px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <h3 id="noteModalHeader" style="font-size: 1rem; font-weight: 600;">Write Work Note</h3>
+        <button type="button" onclick="closeModal('noteEditorModal')" class="icon-btn" style="border: none; background: transparent;">
+          <i data-lucide="x" style="width: 1.25rem; height: 1.25rem;"></i>
+        </button>
+      </div>
+
+      <!-- Online One-Tap Translation Tool -->
+      <div class="translate-bar">
+        <i data-lucide="languages" style="width: 1rem; height: 1rem; color: #60a5fa; flex-shrink: 0;"></i>
+        <span style="font-size: 0.7rem; color: #a3a3a3; flex-shrink: 0;">Translate to:</span>
+        <select id="targetTranslateLang" class="lang-select" style="padding: 0.25rem 0.4rem; font-size: 0.7rem; flex: 1;">
+          <option value="km">ភាសាខ្មែរ (Khmer)</option>
+          <option value="zh">中文 (Chinese)</option>
+          <option value="en">English</option>
+        </select>
+        <button type="button" id="translateBtn" onclick="translateCurrentNote()" class="action-btn btn-blue" style="padding: 0.35rem 0.65rem; font-size: 0.7rem; border-radius: 0.5rem; flex-direction: row; align-items: center; gap: 0.25rem;">
+          <i data-lucide="sparkles" style="width: 0.75rem; height: 0.75rem;"></i>
+          <span id="translateBtnLabel">Translate</span>
+        </button>
+      </div>
+
+      <form id="workNoteForm" onsubmit="handleSaveWorkNote(event)">
+        <input type="hidden" id="workNoteId">
+
+        <div class="form-group">
+          <label class="form-label" id="workNoteTitleLabel">Topic / Headline</label>
+          <input type="text" id="workNoteTitle" required placeholder="e.g., Client order or design remarks..." class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" id="workNoteContentLabel">Body & Description</label>
+          <textarea id="workNoteContent" rows="5" required placeholder="Type whatever details or job info you need..." class="form-textarea" style="resize: vertical;"></textarea>
+        </div>
+
+        <!-- Image Upload Input -->
+        <div class="form-group">
+          <label class="form-label" id="workNoteImageLabel">Attach Job Image / Photo (Saved Offline)</label>
+          <input type="file" id="workNoteFileInput" accept="image/*" onchange="previewSelectedImage(event)" class="form-input" style="font-size: 0.75rem; padding: 0.35rem 0.5rem;">
+          
+          <div id="imagePreviewContainer" style="display: none; margin-top: 0.5rem; position: relative;">
+            <img id="imagePreviewDisplay" class="note-image-preview" alt="Attachment Preview">
+            <button type="button" onclick="removeSelectedImage()" class="icon-btn rose" style="position: absolute; top: 6px; right: 6px; padding: 0.35rem; background: rgba(0,0,0,0.8);" title="Remove Image">
+              <i data-lucide="trash" style="width: 0.8rem; height: 0.8rem;"></i>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" onclick="closeModal('noteEditorModal')" class="action-btn btn-slate" style="flex: 1; align-items: center; justify-content: center; padding: 0.6rem;">
+            Cancel
+          </button>
+          <button type="submit" class="action-btn btn-blue" style="flex: 1; align-items: center; justify-content: center; padding: 0.6rem;">
+            Save Note
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Settings & Backup -->
+  <div id="backupModal" class="modal-overlay hidden no-print">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #262626;">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <i data-lucide="database" style="width: 1.1rem; height: 1.1rem; color: #60a5fa;"></i>
+          <h3 id="settingsModalTitle" style="font-size: 1rem; font-weight: 600;">Data & Settings</h3>
+        </div>
+        <button type="button" onclick="closeModal('backupModal')" class="icon-btn" style="border: none; background: transparent;">
+          <i data-lucide="x" style="width: 1.25rem; height: 1.25rem;"></i>
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <div style="padding: 0.75rem; background: #0a0a0a; border: 1px solid #262626; border-radius: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <span id="settingsRemindersLabel" style="font-size: 0.75rem; font-weight: 600;">Reminders & Alerts</span>
+            <button id="modalNotifyBtn" onclick="toggleNotifications()" class="icon-btn blue" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">
+              Enable
+            </button>
+          </div>
+          <p id="settingsRemindersDesc" style="font-size: 0.7rem; color: #737373;">
+            Alerts you for standard 8h shifts and daily meal timings.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <button onclick="closeModal('backupModal'); exportToPDF();" class="action-btn btn-rose" style="align-items: center; padding: 0.75rem;">
+            <i data-lucide="printer" style="width: 1.1rem; height: 1.1rem; margin-bottom: 0.2rem;"></i>
+            <span id="exportPdfBtnLabel" style="font-size: 0.75rem;">PDF Export</span>
+          </button>
+          <button onclick="exportDataAsExcel()" class="action-btn btn-green" style="align-items: center; padding: 0.75rem;">
+            <i data-lucide="sheet" style="width: 1.1rem; height: 1.1rem; margin-bottom: 0.2rem;"></i>
+            <span id="exportExcelBtnLabel" style="font-size: 0.75rem;">Excel Export</span>
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #262626;">
+          <button onclick="exportDataAsJSON()" class="icon-btn" style="justify-content: center; font-size: 0.75rem; padding: 0.5rem;">
+            <i data-lucide="download" style="width: 0.85rem; height: 0.85rem; margin-right: 0.35rem; color: #60a5fa;"></i>
+            <span id="jsonBackupLabel">JSON Backup File</span>
+          </button>
+          <label class="icon-btn" style="justify-content: center; font-size: 0.75rem; padding: 0.5rem; cursor: pointer;">
+            <i data-lucide="upload" style="width: 0.85rem; height: 0.85rem; margin-right: 0.35rem; color: #f59e0b;"></i>
+            <span id="jsonRestoreLabel">Restore Backup (JSON)</span>
+            <input type="file" id="importFileInput" accept=".json" onchange="importDataFromJSON(event)" style="display: none;">
+          </label>
+        </div>
+
+        <div style="padding: 0.6rem; background: #0a0a0a; border: 1px solid #262626; border-radius: 0.75rem; font-size: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; color: #a3a3a3; margin-bottom: 0.2rem;">
+            <span id="monthHoursSumLabel">This Month Hours:</span>
+            <span id="monthHoursSummary" style="font-weight: 600; color: white;">0.0h</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; color: #a3a3a3;">
+            <span id="monthSpentSumLabel">This Month Spent:</span>
+            <span id="monthSpendingSummary" style="font-weight: 600; color: #34d399;">$0.00</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.4rem; border-top: 1px solid #262626;">
+          <span id="storageSummaryText" style="font-size: 0.7rem; color: #737373;">0 entries</span>
+          <button onclick="confirmClearAllData()" style="background: none; border: none; color: #fb7185; font-size: 0.75rem; cursor: pointer;">
+            <span id="clearAllBtnLabel">Clear All</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" style="position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); padding: 0.5rem 1rem; border-radius: 1rem; background: #262626; border: 1px solid #404040; font-size: 0.75rem; color: white; display: flex; align-items: center; gap: 0.4rem; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;">
+    <i data-lucide="check-circle" style="width: 0.9rem; height: 0.9rem; color: #34d399;"></i>
+    <span id="toastMsg">Action completed</span>
+  </div>
+
+  <!-- App Script -->
+  <script>
+    const STORAGE_KEY = 'daily_tracker_logs_v1';
+    const ACTIVE_SHIFT_KEY = 'daily_tracker_active_shift';
+    const NOTIFY_KEY = 'daily_tracker_notifications_enabled';
+    const LANG_KEY = 'daily_tracker_language_selected';
+    const WORK_NOTES_KEY = 'daily_tracker_work_notes_v1';
+
+    const i18n = {
+      en: {
+        tabTracker: "Daily Tracker",
+        tabNotebook: "Work Notes & Images",
+        weekDays: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+        months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+        today: "Today",
+        offDuty: "Off",
+        clockIn: "CLOCK IN",
+        clockOut: "CLOCK OUT",
+        clockInSub: "Start shift timer",
+        clockOutSub: "Tap to finish shift",
+        meal: "+ MEAL",
+        mealSub: "Log food & drinks",
+        expense: "+ EXPENSE",
+        expenseSub: "Money spent",
+        note: "+ NOTE",
+        noteSub: "Shift notes / tasks",
+        dailyTimeline: "Daily Timeline",
+        noEntries: "No entries for this day.",
+        noEntriesSub: "Use the action buttons above to log work, meals, or costs.",
+        hours: "Hours",
+        spent: "Spent",
+        offlineSaved: "Offline Saved",
+        addEntry: "Add Entry",
+        editEntry: "Edit Entry",
+        time: "Time",
+        category: "Category",
+        description: "Description",
+        cost: "Cost / Amount ($)",
+        notes: "Notes (Optional)",
+        cancel: "Cancel",
+        save: "Save",
+        dataSettings: "Data & Settings",
+        reminders: "Reminders & Alerts",
+        remindersDesc: "Alerts you for standard 8h shifts and daily meal timings.",
+        enable: "Enable",
+        mute: "Mute",
+        pdfExport: "PDF Export",
+        excelExport: "Excel Export",
+        jsonBackup: "JSON Backup File",
+        jsonRestore: "Restore Backup (JSON)",
+        monthHours: "This Month Hours:",
+        monthSpent: "This Month Spent:",
+        clearAll: "Clear All",
+        workShiftStarted: "Shift started! Clocked in.",
+        workShiftEnded: "Clocked out! Total shift:",
+        entryLogged: "New entry logged",
+        entryUpdated: "Entry updated",
+        entryRemoved: "Entry removed",
+        allCleared: "All logs cleared",
+        confirmClear: "Are you sure you want to erase all stored entries?",
+        newNote: "Write Note",
+        searchNotes: "Search work notes...",
+        noWorkNotes: "No work notes or images yet.",
+        noWorkNotesSub: "Tap 'Write Note' above to write whatever words, customer requests, or attach photos for your job.",
+        translating: "Translating...",
+        translateSuccess: "Translation appended & ready to save!",
+        translateOffline: "You are offline. Connect to Wi-Fi/data to translate text."
+      },
+      km: {
+        tabTracker: "កាលវិភាគ & ម៉ោង",
+        tabNotebook: "កំណត់ត្រាការងារ & រូបភាព",
+        weekDays: ["អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហ", "សុក្រ", "សៅរ៍"],
+        months: ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"],
+        today: "ថ្ងៃនេះ",
+        offDuty: "សម្រាក",
+        clockIn: "ចូលធ្វើការ",
+        clockOut: "ចេញពីធ្វើការ",
+        clockInSub: "ចាប់ផ្ដើមកត់ម៉ោងធ្វើការ",
+        clockOutSub: "ចុចដើម្បីបញ្ចប់វេនការងារ",
+        meal: "+ អាហារ",
+        mealSub: "កត់ត្រាអាហារ & ភេសជ្ជៈ",
+        expense: "+ ចំណាយ",
+        expenseSub: "ប្រាក់បានចំណាយ",
+        note: "+ កំណត់ចំណាំ",
+        noteSub: "កំណត់ចំណាំការងារ",
+        dailyTimeline: "កាលវិភាគប្រចាំថ្ងៃ",
+        noEntries: "មិនមានទិន្នន័យសម្រាប់ថ្ងៃនេះទេ។",
+        noEntriesSub: "សូមប្រើប្រាស់ប៊ូតុងខាងលើដើម្បីកត់ត្រាម៉ោងការងារ អាហារ ឬការចំណាយ។",
+        hours: "ម៉ោង",
+        spent: "ចំណាយ",
+        offlineSaved: "រក្សាទុក Offline រួចរាល់",
+        addEntry: "បន្ថែមទិន្នន័យ",
+        editEntry: "កែប្រែទិន្នន័យ",
+        time: "ម៉ោង",
+        category: "ប្រភេទ",
+        description: "ការពិពណ៌នា",
+        cost: "ចំនួនទឹកប្រាក់ ($)",
+        notes: "កំណត់ចំណាំបន្ថែម",
+        cancel: "បោះបង់",
+        save: "រក្សាទុក",
+        dataSettings: "ទិន្នន័យ & ការកំណត់",
+        reminders: "ការដាស់តឿន",
+        remindersDesc: "ផ្ដល់ដំណឹងនៅពេលធ្វើការគ្រប់ ៨ ម៉ោង និងម៉ោងញ៉ាំបាយ។",
+        enable: "បើក",
+        mute: "បិទ",
+        pdfExport: "ទាញយកជា PDF",
+        excelExport: "ទាញយកជា Excel",
+        jsonBackup: "បម្រុងទុកជា JSON",
+        jsonRestore: "ទាញយកទិន្នន័យចាស់ (JSON)",
+        monthHours: "ម៉ោងធ្វើការខែនេះ:",
+        monthSpent: "ការចំណាយខែនេះ:",
+        clearAll: "លុបទិន្នន័យទាំងអស់",
+        workShiftStarted: "បានចាប់ផ្ដើមវេនការងារ!",
+        workShiftEnded: "បានបញ្ចប់ការងារ! សរុប:",
+        entryLogged: "បានកត់ត្រាជោគជ័យ",
+        entryUpdated: "បានកែប្រែជោគជ័យ",
+        entryRemoved: "បានលុបជោគជ័យ",
+        allCleared: "ទិន្នន័យទាំងអស់ត្រូវបានលុប",
+        confirmClear: "តើអ្នកប្រាកដជាចង់លុបទិន្នន័យទាំងអស់មែនទេ?",
+        newNote: "សរសេរកំណត់ត្រា",
+        searchNotes: "ស្វែងរកកំណត់ត្រាការងារ...",
+        noWorkNotes: "មិនទាន់មានកំណត់ត្រា ឬរូបភាពការងារនៅឡើយទេ។",
+        noWorkNotesSub: "ចុចប៊ូតុង 'សរសេរកំណត់ត្រា' ខាងលើដើម្បីសរសេរព័ត៌មានការងារ ឬបញ្ចូលរូបភាព។",
+        translating: "កំពុងបកប្រែ...",
+        translateSuccess: "បានបកប្រែជោគជ័យ! រួចរាល់សម្រាប់រក្សាទុក។",
+        translateOffline: "អ្នកកំពុង Offline។ សូមភ្ជាប់អ៊ីនធឺណិតដើម្បីបកប្រែអត្ថបទ។"
+      },
+      zh: {
+        tabTracker: "工时与账目",
+        tabNotebook: "工作便签与图片",
+        weekDays: ["日", "一", "二", "三", "四", "五", "六"],
+        months: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+        today: "今天",
+        offDuty: "休息",
+        clockIn: "上班打卡",
+        clockOut: "下班打卡",
+        clockInSub: "开始工作计时",
+        clockOutSub: "点击结束当班",
+        meal: "+ 餐饮记录",
+        mealSub: "记录三餐与饮品",
+        expense: "+ 记账支出",
+        expenseSub: "记录花销支出",
+        note: "+ 工作便签",
+        noteSub: "班次备忘与任务",
+        dailyTimeline: "每日时间线",
+        noEntries: "今日尚无任何记录。",
+        noEntriesSub: "使用上方快捷按钮记录工时、餐饮或支出。",
+        hours: "工时",
+        spent: "支出",
+        offlineSaved: "已离线保存",
+        addEntry: "新增记录",
+        editEntry: "编辑记录",
+        time: "时间",
+        category: "类别",
+        description: "项目描述",
+        cost: "金额 ($)",
+        notes: "详细备注（可选）",
+        cancel: "取消",
+        save: "保存",
+        dataSettings: "数据与设置",
+        reminders: "提醒与通知",
+        remindersDesc: "满8小时工时提醒及每日用餐提醒。",
+        enable: "开启",
+        mute: "静音",
+        pdfExport: "导出为 PDF",
+        excelExport: "导出为 Excel",
+        jsonBackup: "导出 JSON 备份",
+        jsonRestore: "恢复数据 (JSON)",
+        monthHours: "本月工时总计:",
+        monthSpent: "本月支出总计:",
+        clearAll: "清空全部数据",
+        workShiftStarted: "已上班打卡！",
+        workShiftEnded: "已下班打卡！本次工时:",
+        entryLogged: "已成功记录",
+        entryUpdated: "记录已更新",
+        entryRemoved: "记录已删除",
+        allCleared: "所有本地记录已清除",
+        confirmClear: "确定要清空所有记录吗？",
+        newNote: "写工作笔记",
+        searchNotes: "搜索工作笔记与记录...",
+        noWorkNotes: "暂无工作便签或图片。",
+        noWorkNotesSub: "点击上方“写工作笔记”，自由记录工作详情、文案并附带照片。",
+        translating: "正在翻译...",
+        translateSuccess: "已翻译！可直接保存到本地离线存储。",
+        translateOffline: "当前处于离线状态。请连接网络后使用在线翻译功能。"
+      }
+    };
+
+    let state = {
+      currentPage: 'tracker',
+      lang: localStorage.getItem(LANG_KEY) || 'en',
+      selectedDate: getTodayDateString(),
+      calendarViewDate: new Date(),
+      activeShift: null,
+      notificationsEnabled: false,
+      lastNotified: {},
+      logs: {},
+      workNotes: [],
+      currentImageBase64: null
+    };
+
+    function t(key) {
+      const activeDict = i18n[state.lang] || i18n.en;
+      return activeDict[key] !== undefined ? activeDict[key] : (i18n.en[key] || key);
+    }
+
+    // Page Navigation
+    function switchPage(pageName) {
+      state.currentPage = pageName;
+      document.getElementById('pageTracker').className = pageName === 'tracker' ? 'page-section active' : 'page-section';
+      document.getElementById('pageNotebook').className = pageName === 'notebook' ? 'page-section active' : 'page-section';
+
+      document.getElementById('tabTrackerBtn').className = pageName === 'tracker' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tabNotebookBtn').className = pageName === 'notebook' ? 'tab-btn active' : 'tab-btn';
+
+      document.getElementById('mainFooter').style.display = pageName === 'tracker' ? 'block' : 'none';
+
+      if (pageName === 'notebook') renderWorkNotes();
+      refreshIcons();
+    }
+
+    function changeLanguage(newLang) {
+      state.lang = newLang;
+      localStorage.setItem(LANG_KEY, newLang);
+      document.getElementById('langSwitcher').value = newLang;
+      applyLanguageToUI();
+      renderHeader();
+      renderCalendar();
+      renderTimeline();
+      if (state.currentPage === 'notebook') renderWorkNotes();
+    }
+
+    function applyLanguageToUI() {
+      document.getElementById('tabTrackerLabel').textContent = t('tabTracker');
+      document.getElementById('tabNotebookLabel').textContent = t('tabNotebook');
+      document.getElementById('todayBtnLabel').textContent = t('today');
+      document.getElementById('mealBtnText').textContent = t('meal');
+      document.getElementById('mealBtnSub').textContent = t('mealSub');
+      document.getElementById('expenseBtnText').textContent = t('expense');
+      document.getElementById('expenseBtnSub').textContent = t('expenseSub');
+      document.getElementById('noteBtnText').textContent = t('note');
+      document.getElementById('noteBtnSub').textContent = t('noteSub');
+      document.getElementById('timelineTitleLabel').textContent = t('dailyTimeline');
+      document.getElementById('footerHoursLabel').textContent = t('hours') + ':';
+      document.getElementById('footerSpentLabel').textContent = t('spent') + ':';
+      document.getElementById('footerOfflineLabel').textContent = t('offlineSaved');
+
+      document.getElementById('notesSearchInput').placeholder = t('searchNotes');
+      document.getElementById('newDocBtnLabel').textContent = t('newNote');
+
+      // Modals
+      document.getElementById('formTimeLabel').textContent = t('time');
+      document.getElementById('formCategoryLabel').textContent = t('category');
+      document.getElementById('formTitleLabel').textContent = t('description');
+      document.getElementById('formAmountLabel').textContent = t('cost');
+      document.getElementById('formNotesLabel').textContent = t('notes');
+      document.getElementById('modalCancelBtn').textContent = t('cancel');
+      document.getElementById('modalSaveBtn').textContent = t('save');
+      document.getElementById('settingsModalTitle').textContent = t('dataSettings');
+      document.getElementById('settingsRemindersLabel').textContent = t('reminders');
+      document.getElementById('settingsRemindersDesc').textContent = t('remindersDesc');
+      document.getElementById('exportPdfBtnLabel').textContent = t('pdfExport');
+      document.getElementById('exportExcelBtnLabel').textContent = t('excelExport');
+      document.getElementById('jsonBackupLabel').textContent = t('jsonBackup');
+      document.getElementById('jsonRestoreLabel').textContent = t('jsonRestore');
+      document.getElementById('monthHoursSumLabel').textContent = t('monthHours');
+      document.getElementById('monthSpentSumLabel').textContent = t('monthSpent');
+      document.getElementById('clearAllBtnLabel').textContent = t('clearAll');
+    }
+
+    // --- Online Translation Engine (When Internet Available) ---
+    async function translateCurrentNote() {
+      if (!navigator.onLine) {
+        showToast(t('translateOffline'), true);
+        return;
+      }
+
+      const titleInput = document.getElementById('workNoteTitle');
+      const contentInput = document.getElementById('workNoteContent');
+      const targetLang = document.getElementById('targetTranslateLang').value;
+      const btnLabel = document.getElementById('translateBtnLabel');
+
+      const originalTitle = titleInput.value.trim();
+      const originalContent = contentInput.value.trim();
+
+      if (!originalTitle && !originalContent) {
+        showToast("Enter a title or text to translate first", true);
+        return;
+      }
+
+      btnLabel.textContent = t('translating');
+
+      try {
+        const translateTextAPI = async (text, target) => {
+          if (!text) return "";
+          // Free Translation API endpoint
+          const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=autodetect|${target}`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data && data.responseData && data.responseData.translatedText) {
+            return data.responseData.translatedText;
+          }
+          return text;
+        };
+
+        const [translatedTitle, translatedContent] = await Promise.all([
+          translateTextAPI(originalTitle, targetLang),
+          translateTextAPI(originalContent, targetLang)
+        ]);
+
+        // Append the translated text cleanly below the original
+        if (translatedTitle && translatedTitle !== originalTitle) {
+          titleInput.value = `${originalTitle} (${translatedTitle})`;
+        }
+        if (translatedContent && translatedContent !== originalContent) {
+          contentInput.value = `${originalContent}\n\n--- [Translated] ---\n${translatedContent}`;
+        }
+
+        showToast(t('translateSuccess'));
+        playBeep(784, 0.2);
+      } catch (err) {
+        console.error("Translation error", err);
+        showToast("Translation service error. Try again when online.", true);
+      } finally {
+        btnLabel.textContent = "Translate";
+      }
+    }
+
+    // --- Page 2: Work Notes Feed & Modal Logic ---
+    function renderWorkNotes() {
+      const container = document.getElementById('workNotesList');
+      container.innerHTML = '';
+      const filter = (document.getElementById('notesSearchInput').value || '').toLowerCase();
+
+      const filtered = state.workNotes.filter(n => 
+        (n.title && n.title.toLowerCase().includes(filter)) || 
+        (n.content && n.content.toLowerCase().includes(filter))
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2.5rem 1rem; color: #737373;">
+            <p style="font-size: 0.85rem; font-weight: 500;">${t('noWorkNotes')}</p>
+            <p style="font-size: 0.75rem; margin-top: 0.35rem;">${t('noWorkNotesSub')}</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(note => {
+        const card = document.createElement('div');
+        card.className = 'note-post';
+
+        const imgHtml = note.image ? `<img src="${note.image}" class="note-image-preview" alt="Attachment">` : '';
+
+        card.innerHTML = `
+          <div class="note-post-header">
+            <div>
+              <h4 class="note-post-title">${escapeHtml(note.title)}</h4>
+              <p class="note-post-date">${note.dateFormatted || ''}</p>
+            </div>
+            <div style="display: flex; gap: 0.25rem;">
+              <button onclick="editWorkNote('${note.id}')" class="icon-btn" style="padding: 0.35rem;"><i data-lucide="pencil" style="width: 0.8rem; height: 0.8rem;"></i></button>
+              <button onclick="deleteWorkNote('${note.id}')" class="icon-btn rose" style="padding: 0.35rem;"><i data-lucide="trash-2" style="width: 0.8rem; height: 0.8rem;"></i></button>
+            </div>
+          </div>
+          <p class="note-post-body">${escapeHtml(note.content)}</p>
+          ${imgHtml}
+        `;
+        container.appendChild(card);
+      });
+
+      refreshIcons();
+    }
+
+    function openNoteEditorModal() {
+      document.getElementById('workNoteId').value = '';
+      document.getElementById('workNoteTitle').value = '';
+      document.getElementById('workNoteContent').value = '';
+      document.getElementById('workNoteFileInput').value = '';
+      state.currentImageBase64 = null;
+      document.getElementById('imagePreviewContainer').style.display = 'none';
+      document.getElementById('noteModalHeader').textContent = t('newNote');
+      openModal('noteEditorModal');
+    }
+
+    function editWorkNote(id) {
+      const note = state.workNotes.find(n => n.id === id);
+      if (!note) return;
+
+      document.getElementById('workNoteId').value = note.id;
+      document.getElementById('workNoteTitle').value = note.title || '';
+      document.getElementById('workNoteContent').value = note.content || '';
+      document.getElementById('workNoteFileInput').value = '';
+      state.currentImageBase64 = note.image || null;
+
+      if (note.image) {
+        document.getElementById('imagePreviewDisplay').src = note.image;
+        document.getElementById('imagePreviewContainer').style.display = 'block';
+      } else {
+        document.getElementById('imagePreviewContainer').style.display = 'none';
+      }
+
+      document.getElementById('noteModalHeader').textContent = t('editEntry');
+      openModal('noteEditorModal');
+    }
+
+    function previewSelectedImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        state.currentImageBase64 = e.target.result;
+        document.getElementById('imagePreviewDisplay').src = e.target.result;
+        document.getElementById('imagePreviewContainer').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeSelectedImage() {
+      state.currentImageBase64 = null;
+      document.getElementById('workNoteFileInput').value = '';
+      document.getElementById('imagePreviewContainer').style.display = 'none';
+    }
+
+    function handleSaveWorkNote(e) {
+      e.preventDefault();
+      const id = document.getElementById('workNoteId').value;
+      const title = document.getElementById('workNoteTitle').value.trim();
+      const content = document.getElementById('workNoteContent').value.trim();
+      const now = new Date();
+      const dateFormatted = `${now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} • ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      if (id) {
+        const index = state.workNotes.findIndex(n => n.id === id);
+        if (index !== -1) {
+          state.workNotes[index] = {
+            ...state.workNotes[index],
+            title,
+            content,
+            image: state.currentImageBase64,
+            dateFormatted
+          };
+          showToast(t('entryUpdated'));
+        }
+      } else {
+        state.workNotes.unshift({
+          id: 'note_' + Date.now(),
+          title,
+          content,
+          image: state.currentImageBase64,
+          dateFormatted,
+          timestamp: Date.now()
+        });
+        showToast(t('entryLogged'));
+      }
+
+      saveStorage();
+      closeModal('noteEditorModal');
+      renderWorkNotes();
+    }
+
+    function deleteWorkNote(id) {
+      state.workNotes = state.workNotes.filter(n => n.id !== id);
+      saveStorage();
+      renderWorkNotes();
+      showToast(t('entryRemoved'));
+    }
+
+    // --- Audio Feedback ---
+    function playBeep(freq = 587.33, duration = 0.15) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // --- Notifications ---
+    function initNotifications() {
+      state.notificationsEnabled = localStorage.getItem(NOTIFY_KEY) === 'true';
+      updateNotificationButtons();
+      setInterval(checkScheduledAlerts, 60000);
+    }
+
+    function toggleNotifications() {
+      if (!("Notification" in window)) {
+        showToast("Notifications not supported in this browser", true);
+        return;
+      }
+      if (Notification.permission === "granted") {
+        state.notificationsEnabled = !state.notificationsEnabled;
+        localStorage.setItem(NOTIFY_KEY, state.notificationsEnabled);
+        updateNotificationButtons();
+        showToast(state.notificationsEnabled ? t('reminders') + " ON" : t('reminders') + " OFF");
+        if (state.notificationsEnabled) playBeep(784);
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((perm) => {
+          if (perm === "granted") {
+            state.notificationsEnabled = true;
+            localStorage.setItem(NOTIFY_KEY, true);
+            updateNotificationButtons();
+            showToast(t('reminders') + " ON");
+            playBeep(784);
+          }
+        });
+      }
+    }
+
+    function updateNotificationButtons() {
+      const btn = document.getElementById('notifyBtn');
+      const icon = document.getElementById('notifyIcon');
+      const modalBtn = document.getElementById('modalNotifyBtn');
+
+      if (state.notificationsEnabled && Notification.permission === "granted") {
+        btn.classList.add('blue');
+        icon.setAttribute('data-lucide', 'bell');
+        modalBtn.textContent = t('mute');
+      } else {
+        btn.classList.remove('blue');
+        icon.setAttribute('data-lucide', 'bell-off');
+        modalBtn.textContent = t('enable');
+      }
+      refreshIcons();
+    }
+
+    function checkScheduledAlerts() {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const today = getTodayDateString();
+
+      if (state.activeShift) {
+        const start = new Date(state.activeShift.startTime);
+        const shiftDur = (now - start) / (1000 * 60 * 60);
+        if (shiftDur >= 8.0 && !state.lastNotified['shift_8h_' + today]) {
+          state.lastNotified['shift_8h_' + today] = true;
+          triggerAlert(t('clockOut'), "8 hours shift reached. Remember to clock out!");
+        }
+      }
+
+      if (h === 12 && m === 30 && !state.lastNotified['lunch_' + today]) {
+        state.lastNotified['lunch_' + today] = true;
+        triggerAlert(t('meal'), "Lunch time! Remember to log food.");
+      }
+    }
+
+    function triggerAlert(title, message) {
+      playBeep(659.25, 0.25);
+      showToast(`${title}: ${message}`);
+      if (state.notificationsEnabled && ("Notification" in window) && Notification.permission === "granted") {
+        new Notification(title, { body: message });
+      }
+    }
+
+    // --- Helpers ---
+    function formatDateKey(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getTodayDateString() {
+      return formatDateKey(new Date());
+    }
+
+    function loadStorage() {
+      try {
+        const storedLogs = localStorage.getItem(STORAGE_KEY);
+        if (storedLogs) {
+          state.logs = JSON.parse(storedLogs);
+        } else {
+          const today = getTodayDateString();
+          state.logs = {
+            [today]: [
+              { id: 'm_1', type: 'clockin', time: '08:30', title: 'Work In', notes: 'Morning start' },
+              { id: 'm_2', type: 'meal', time: '12:15', title: 'Lunch', amount: 4.50, category: 'Food' }
+            ]
+          };
+          saveStorage();
+        }
+
+        const storedShift = localStorage.getItem(ACTIVE_SHIFT_KEY);
+        if (storedShift) state.activeShift = JSON.parse(storedShift);
+
+        const storedWorkNotes = localStorage.getItem(WORK_NOTES_KEY);
+        if (storedWorkNotes) {
+          state.workNotes = JSON.parse(storedWorkNotes);
+        } else {
+          state.workNotes = [
+            {
+              id: 'initial_doc_1',
+              title: 'Welcome to Work Notes',
+              content: 'Write job remarks, specs, or client notes here. Use the translate button when online, and it stays saved forever offline!',
+              dateFormatted: 'Today',
+              timestamp: Date.now()
+            }
+          ];
+          saveStorage();
+        }
+      } catch (e) {
+        state.logs = {};
+        state.workNotes = [];
+      }
+    }
+
+    function saveStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.logs));
+      localStorage.setItem(WORK_NOTES_KEY, JSON.stringify(state.workNotes));
+      if (state.activeShift) {
+        localStorage.setItem(ACTIVE_SHIFT_KEY, JSON.stringify(state.activeShift));
+      } else {
+        localStorage.removeItem(ACTIVE_SHIFT_KEY);
+      }
+    }
+
+    function formatDisplayDate(dateStr) {
+      const parts = dateStr.split('-');
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      const locale = state.lang === 'km' ? 'km-KH' : (state.lang === 'zh' ? 'zh-CN' : 'en-US');
+      return d.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    // Page 1 Renderers
+    function renderHeader() {
+      const parts = state.selectedDate.split('-');
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      const locale = state.lang === 'km' ? 'km-KH' : (state.lang === 'zh' ? 'zh-CN' : 'en-US');
+
+      const isToday = state.selectedDate === getTodayDateString();
+      document.getElementById('headerDateDisplay').textContent = isToday ? t('today') : formatDisplayDate(state.selectedDate);
+      document.getElementById('headerSubDate').textContent = d.toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('selectedDateBadge').textContent = formatDisplayDate(state.selectedDate);
+
+      const statusBadge = document.getElementById('statusBadge');
+      const statusText = document.getElementById('statusText');
+      const clockBtn = document.getElementById('clockToggleBtn');
+      const clockBtnText = document.getElementById('clockBtnText');
+      const clockSubtext = document.getElementById('clockSubtext');
+
+      if (state.activeShift) {
+        statusBadge.className = 'status-badge active';
+        const start = new Date(state.activeShift.startTime);
+        statusText.textContent = `In @ ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        clockBtn.className = 'action-btn btn-rose';
+        clockBtnText.textContent = t('clockOut');
+        clockSubtext.textContent = t('clockOutSub');
+      } else {
+        statusBadge.className = 'status-badge';
+        statusText.textContent = t('offDuty');
+        clockBtn.className = 'action-btn btn-blue';
+        clockBtnText.textContent = t('clockIn');
+        clockSubtext.textContent = t('clockInSub');
+      }
+    }
+
+    function renderCalendar() {
+      const year = state.calendarViewDate.getFullYear();
+      const month = state.calendarViewDate.getMonth();
+      const monthsList = t('months');
+      document.getElementById('calendarMonthLabel').textContent = `${monthsList[month]} ${year}`;
+
+      const weekHeader = document.getElementById('weekHeaderRow');
+      weekHeader.innerHTML = '';
+      t('weekDays').forEach(d => {
+        weekHeader.innerHTML += `<span>${d}</span>`;
+      });
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const prevMonthDays = new Date(year, month, 0).getDate();
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      const todayStr = getTodayDateString();
+
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const div = document.createElement('div');
+        div.className = 'day-cell';
+        div.style.color = '#525252';
+        div.textContent = prevMonthDays - i;
+        grid.appendChild(div);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isSelected = dateKey === state.selectedDate;
+        const isToday = dateKey === todayStr;
+        const dayLogs = state.logs[dateKey] || [];
+
+        const hasWork = dayLogs.some(e => e.type === 'clockin' || e.type === 'clockout' || e.durationHours > 0);
+        const hasExpense = dayLogs.some(e => (e.type === 'expense' || e.type === 'meal') && e.amount > 0);
+
+        const btn = document.createElement('button');
+        btn.className = `day-cell ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`;
+        btn.textContent = day;
+        btn.onclick = () => {
+          state.selectedDate = dateKey;
+          renderHeader();
+          renderCalendar();
+          renderTimeline();
+        };
+
+        if (dayLogs.length > 0 && !isSelected) {
+          const dots = document.createElement('div');
+          dots.className = 'dot-box';
+          if (hasWork) dots.innerHTML += '<span class="mini-dot blue"></span>';
+          if (hasExpense) dots.innerHTML += '<span class="mini-dot green"></span>';
+          btn.appendChild(dots);
+        }
+        grid.appendChild(btn);
+      }
+    }
+
+    function navigateMonth(dir) {
+      state.calendarViewDate.setMonth(state.calendarViewDate.getMonth() + dir);
+      renderCalendar();
+    }
+
+    function goToToday() {
+      state.calendarViewDate = new Date();
+      state.selectedDate = getTodayDateString();
+      renderHeader();
+      renderCalendar();
+      renderTimeline();
+    }
+
+    function renderTimeline() {
+      const container = document.getElementById('timelineList');
+      container.innerHTML = '';
+      const dayLogs = state.logs[state.selectedDate] || [];
+      const sorted = [...dayLogs].sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
+      document.getElementById('entryCountBadge').textContent = `${sorted.length} events`;
+
+      let totalHours = 0;
+      let totalSpent = 0;
+
+      if (sorted.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2rem 1rem; color: #737373;">
+            <p style="font-size: 0.8rem;">${t('noEntries')}</p>
+            <p style="font-size: 0.7rem; margin-top: 0.25rem;">${t('noEntriesSub')}</p>
+          </div>
+        `;
+        document.getElementById('dailyHoursTotal').textContent = '0.0h';
+        document.getElementById('dailyExpenseTotal').textContent = '$0.00';
+        return;
+      }
+
+      sorted.forEach(item => {
+        if (item.amount) totalSpent += parseFloat(item.amount);
+        if (item.durationHours) totalHours += parseFloat(item.durationHours);
+
+        let badgeClass = 'badge-slate';
+        let typeLabel = item.type;
+        if (item.type === 'clockin') { badgeClass = 'badge-blue'; typeLabel = t('clockIn'); }
+        else if (item.type === 'clockout') { badgeClass = 'badge-cyan'; typeLabel = `${t('clockOut')} (${item.durationHours || 0}h)`; }
+        else if (item.type === 'meal') { badgeClass = 'badge-green'; typeLabel = t('meal'); }
+        else if (item.type === 'expense') { badgeClass = 'badge-amber'; typeLabel = item.category || t('expense'); }
+        else if (item.type === 'note') { badgeClass = 'badge-slate'; typeLabel = t('note'); }
+
+        const costStr = item.amount ? `<span style="color: #34d399; font-weight: bold; margin-left: 0.35rem;">($${parseFloat(item.amount).toFixed(2)})</span>` : '';
+
+        const card = document.createElement('div');
+        card.className = 'timeline-card';
+        card.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
+            <span class="time-stamp">${item.time || '--:--'}</span>
+            <div style="overflow: hidden;">
+              <div style="display: flex; align-items: center; gap: 0.35rem;">
+                <span class="entry-badge ${badgeClass}">${typeLabel}</span>
+                <span style="font-size: 0.75rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.title)}</span>
+                ${costStr}
+              </div>
+              ${item.notes ? `<p style="font-size: 0.7rem; color: #a3a3a3; margin-top: 0.2rem;">${escapeHtml(item.notes)}</p>` : ''}
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.25rem; flex-shrink: 0;">
+            <button onclick="editEntry('${item.id}')" class="icon-btn" style="padding: 0.35rem;"><i data-lucide="pencil" style="width: 0.8rem; height: 0.8rem;"></i></button>
+            <button onclick="deleteEntry('${item.id}')" class="icon-btn" style="padding: 0.35rem; color: #fb7185;"><i data-lucide="trash-2" style="width: 0.8rem; height: 0.8rem;"></i></button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('dailyHoursTotal').textContent = `${totalHours.toFixed(1)}h`;
+      document.getElementById('dailyExpenseTotal').textContent = `$${totalSpent.toFixed(2)}`;
+      refreshIcons();
+    }
+
+    function toggleClockInOut() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      const today = getTodayDateString();
+
+      if (!state.logs[today]) state.logs[today] = [];
+
+      if (!state.activeShift) {
+        state.activeShift = { startTime: now.toISOString(), date: today };
+        state.logs[today].push({
+          id: 'shift_' + Date.now(),
+          type: 'clockin',
+          time: timeStr,
+          title: t('clockIn'),
+          notes: ''
+        });
+        playBeep(523.25);
+        showToast(t('workShiftStarted'));
+      } else {
+        const start = new Date(state.activeShift.startTime);
+        const durationHours = Math.max(0.1, ((now - start) / (1000 * 60 * 60))).toFixed(1);
+        state.logs[today].push({
+          id: 'shift_end_' + Date.now(),
+          type: 'clockout',
+          time: timeStr,
+          title: t('clockOut'),
+          durationHours: parseFloat(durationHours),
+          notes: `${t('hours')}: ${durationHours}h`
+        });
+        state.activeShift = null;
+        playBeep(440);
+        showToast(`${t('workShiftEnded')} ${durationHours}h`);
+      }
+
+      saveStorage();
+      state.selectedDate = today;
+      renderHeader();
+      renderCalendar();
+      renderTimeline();
+    }
+
+    function openAddEntryModal(type) {
+      const now = new Date();
+      document.getElementById('formEntryId').value = '';
+      document.getElementById('formEntryType').value = type;
+      document.getElementById('formTime').value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      document.getElementById('formTitle').value = '';
+      document.getElementById('formAmount').value = '';
+      document.getElementById('formNotes').value = '';
+
+      document.getElementById('modalTitle').textContent = t('addEntry');
+      const amtCont = document.getElementById('amountContainer');
+      const catCont = document.getElementById('categoryContainer');
+
+      amtCont.style.display = (type === 'meal' || type === 'expense') ? 'block' : 'none';
+      catCont.style.display = (type === 'expense') ? 'block' : 'none';
+
+      openModal('entryModal');
+    }
+
+    function editEntry(id) {
+      const list = state.logs[state.selectedDate] || [];
+      const item = list.find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById('formEntryId').value = item.id;
+      document.getElementById('formEntryType').value = item.type;
+      document.getElementById('formTime').value = item.time || '12:00';
+      document.getElementById('formTitle').value = item.title || '';
+      document.getElementById('formAmount').value = item.amount || '';
+      document.getElementById('formNotes').value = item.notes || '';
+      document.getElementById('modalTitle').textContent = t('editEntry');
+
+      const amtCont = document.getElementById('amountContainer');
+      const catCont = document.getElementById('categoryContainer');
+      amtCont.style.display = (item.type === 'meal' || item.type === 'expense') ? 'block' : 'none';
+      catCont.style.display = (item.type === 'expense') ? 'block' : 'none';
+
+      openModal('entryModal');
+    }
+
+    function handleSaveEntry(e) {
+      e.preventDefault();
+      const id = document.getElementById('formEntryId').value;
+      const type = document.getElementById('formEntryType').value;
+      const time = document.getElementById('formTime').value;
+      const title = document.getElementById('formTitle').value.trim();
+      const notes = document.getElementById('formNotes').value.trim();
+      const amtVal = document.getElementById('formAmount').value;
+      const cat = document.getElementById('formCategory').value;
+
+      if (!state.logs[state.selectedDate]) state.logs[state.selectedDate] = [];
+      const parsedAmt = amtVal ? parseFloat(amtVal) : undefined;
+
+      if (id) {
+        const idx = state.logs[state.selectedDate].findIndex(x => x.id === id);
+        if (idx !== -1) {
+          state.logs[state.selectedDate][idx] = {
+            ...state.logs[state.selectedDate][idx],
+            time, title, notes,
+            amount: (type === 'meal' || type === 'expense') ? parsedAmt : undefined,
+            category: type === 'expense' ? cat : undefined
+          };
+          showToast(t('entryUpdated'));
+        }
+      } else {
+        state.logs[state.selectedDate].push({
+          id: 'log_' + Date.now(),
+          type, time, title, notes,
+          amount: (type === 'meal' || type === 'expense') ? parsedAmt : undefined,
+          category: type === 'expense' ? cat : undefined
+        });
+        showToast(t('entryLogged'));
+      }
+
+      playBeep(600, 0.1);
+      saveStorage();
+      closeModal('entryModal');
+      renderTimeline();
+      renderCalendar();
+    }
+
+    function deleteEntry(id) {
+      state.logs[state.selectedDate] = (state.logs[state.selectedDate] || []).filter(x => x.id !== id);
+      saveStorage();
+      renderTimeline();
+      renderCalendar();
+      showToast(t('entryRemoved'));
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      if (id === 'backupModal') updateStorageSummary();
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.style.borderColor = isError ? '#fb7185' : '#404040';
+      toast.style.opacity = '1';
+      setTimeout(() => { toast.style.opacity = '0'; }, 2400);
+    }
+
+    function updateStorageSummary() {
+      let total = 0, mHours = 0, mSpent = 0;
+      const prefix = state.selectedDate.slice(0, 7);
+
+      Object.keys(state.logs).forEach(k => {
+        const list = state.logs[k] || [];
+        total += list.length;
+        if (k.startsWith(prefix)) {
+          list.forEach(item => {
+            if (item.amount) mSpent += parseFloat(item.amount);
+            if (item.durationHours) mHours += parseFloat(item.durationHours);
+          });
+        }
+      });
+
+      document.getElementById('storageSummaryText').textContent = `${total} tracker logs, ${state.workNotes.length} notes`;
+      document.getElementById('monthHoursSummary').textContent = `${mHours.toFixed(1)}h`;
+      document.getElementById('monthSpendingSummary').textContent = `$${mSpent.toFixed(2)}`;
+    }
+
+    // Exports
+    function exportDataAsExcel() {
+      const BOM = "\uFEFF";
+      const headers = [t('time'), t('category'), t('description'), t('cost'), t('hours'), t('notes')];
+      const rows = [headers.join(",")];
+
+      Object.keys(state.logs).sort().forEach(date => {
+        (state.logs[date] || []).forEach(item => {
+          rows.push([
+            `"${date} ${item.time || ''}"`,
+            `"${item.category || item.type}"`,
+            `"${(item.title || '').replace(/"/g, '""')}"`,
+            item.amount ? Number(item.amount).toFixed(2) : '0.00',
+            item.durationHours ? Number(item.durationHours).toFixed(1) : '',
+            `"${(item.notes || '').replace(/"/g, '""')}"`
+          ].join(","));
+        });
+      });
+
+      const blob = new Blob([BOM + rows.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `Work_Expenses_${getTodayDateString()}.csv`;
+      a.click();
+      showToast(t('excelExport'));
+    }
+
+    function exportToPDF() {
+      document.getElementById('printReportSubtitle').textContent = `Generated on ${new Date().toLocaleString()}`;
+      document.getElementById('printReportRange').textContent = formatDisplayDate(state.selectedDate);
+
+      const tbody = document.getElementById('printTableBody');
+      tbody.innerHTML = '';
+      let dh = 0, ds = 0, mh = 0, ms = 0;
+      const prefix = state.selectedDate.slice(0, 7);
+
+      Object.keys(state.logs).sort().forEach(d => {
+        (state.logs[d] || []).forEach(item => {
+          const amt = item.amount ? parseFloat(item.amount) : 0;
+          const dur = item.durationHours ? parseFloat(item.durationHours) : 0;
+
+          if (d === state.selectedDate) { dh += dur; ds += amt; }
+          if (d.startsWith(prefix)) { mh += dur; ms += amt; }
+
+          tbody.innerHTML += `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 0.35rem; border-right: 1px solid #ccc;">${d}</td>
+              <td style="padding: 0.35rem; border-right: 1px solid #ccc;">${item.time || ''}</td>
+              <td style="padding: 0.35rem; border-right: 1px solid #ccc;">${item.type}</td>
+              <td style="padding: 0.35rem; border-right: 1px solid #ccc;">${item.category || ''}</td>
+              <td style="padding: 0.35rem; border-right: 1px solid #ccc;">${escapeHtml(item.title)}</td>
+              <td style="padding: 0.35rem; border-right: 1px solid #ccc; text-align: right;">${amt > 0 ? '$' + amt.toFixed(2) : '-'}</td>
+              <td style="padding: 0.35rem; border-right: 1px solid #ccc; text-align: right;">${dur > 0 ? dur.toFixed(1) + 'h' : '-'}</td>
+              <td style="padding: 0.35rem;">${escapeHtml(item.notes || '')}</td>
+            </tr>
+          `;
+        });
+      });
+
+      document.getElementById('printDayHours').textContent = `${dh.toFixed(1)}h`;
+      document.getElementById('printDaySpent').textContent = `$${ds.toFixed(2)}`;
+      document.getElementById('printMonthHours').textContent = `${mh.toFixed(1)}h`;
+      document.getElementById('printMonthSpent').textContent = `$${ms.toFixed(2)}`;
+
+      setTimeout(() => window.print(), 150);
+    }
+
+    function exportDataAsJSON() {
+      const fullBackup = {
+        logs: state.logs,
+        workNotes: state.workNotes
+      };
+      const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
+      const a = document.createElement('a');
+      a.href = str;
+      a.download = `backup_full_${getTodayDateString()}.json`;
+      a.click();
+    }
+
+    function importDataFromJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.logs || parsed.workNotes) {
+            state.logs = parsed.logs || {};
+            state.workNotes = parsed.workNotes || [];
+          } else {
+            state.logs = parsed;
+          }
+          saveStorage();
+          renderHeader();
+          renderCalendar();
+          renderTimeline();
+          renderWorkNotes();
+          closeModal('backupModal');
+          showToast("Data restored!");
+        } catch (err) {
+          showToast("Invalid JSON file", true);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function confirmClearAllData() {
+      if (window.confirm(t('confirmClear'))) {
+        state.logs = {};
+        state.workNotes = [];
+        state.activeShift = null;
+        saveStorage();
+        renderHeader();
+        renderCalendar();
+        renderTimeline();
+        renderWorkNotes();
+        closeModal('backupModal');
+        showToast(t('allCleared'));
+      }
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function refreshIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStorage();
+      initNotifications();
+      document.getElementById('langSwitcher').value = state.lang;
+      applyLanguageToUI();
+      renderHeader();
+      renderCalendar();
+      renderTimeline();
+      refreshIcons();
+    });
+  </script>
+</body>
+</html>
