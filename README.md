@@ -22,7 +22,9 @@ A responsive, single-file personal tracking web application built with vanilla H
 
 ## 🚀 Live Demo & Deployment
 
-This application requires no build steps (no Node.js, Webpack, or npm). It runs directly in any modern browser[cite: 3].
+This application requires no build steps (no Node.js, Webpack, or npm). It runs directly in any modern browser.
+![Image](https://github.com/Sivlin-creater/Daily-Log-Tracker/image1.png)
+![Image](https://github.com/Sivlin-creater/Daily-Log-Tracker/image2.png)
 
 ### Deploy to GitHub Pages:
 1. Fork or clone this repository.
