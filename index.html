@@ -32,11 +32,7 @@
       --amber: #d97706;
       --rose: #e11d48;
     }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', 'Kantumruy Pro', sans-serif;
       background-color: var(--bg);
@@ -223,11 +219,7 @@
       display: flex;
       gap: 2px;
     }
-    .mini-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 9999px;
-    }
+    .mini-dot { width: 4px; height: 4px; border-radius: 9999px; }
     .mini-dot.blue { background: #60a5fa; }
     .mini-dot.green { background: #34d399; }
 
@@ -260,10 +252,7 @@
       letter-spacing: 0.05em;
       margin-bottom: 0.2rem;
     }
-    .action-btn-sub {
-      font-size: 0.7rem;
-      opacity: 0.9;
-    }
+    .action-btn-sub { font-size: 0.7rem; opacity: 0.9; }
     .btn-blue { background: #2563eb; }
     .btn-green { background: #059669; }
     .btn-amber { background: #d97706; }
@@ -358,16 +347,8 @@
       justify-content: space-between;
       align-items: flex-start;
     }
-    .note-post-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: white;
-    }
-    .note-post-date {
-      font-size: 0.65rem;
-      color: #737373;
-      margin-top: 0.15rem;
-    }
+    .note-post-title { font-size: 0.9rem; font-weight: 600; color: white; }
+    .note-post-date { font-size: 0.65rem; color: #737373; margin-top: 0.15rem; }
     .note-post-body {
       font-size: 0.8rem;
       line-height: 1.45;
@@ -383,7 +364,6 @@
       margin-top: 0.25rem;
     }
 
-    /* Translation Bar inside Note Editor */
     .translate-bar {
       display: flex;
       align-items: center;
@@ -415,15 +395,8 @@
       align-items: center;
       font-size: 0.75rem;
     }
-    .footer-metrics {
-      display: flex;
-      gap: 0.75rem;
-    }
-    .metric-item {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
+    .footer-metrics { display: flex; gap: 0.75rem; }
+    .metric-item { display: flex; align-items: center; gap: 0.35rem; }
 
     /* Modals */
     .modal-overlay {
@@ -447,9 +420,7 @@
       padding: 1.25rem;
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
     }
-    .form-group {
-      margin-bottom: 0.75rem;
-    }
+    .form-group { margin-bottom: 0.75rem; }
     .form-label {
       display: block;
       font-size: 0.65rem;
@@ -477,9 +448,7 @@
       grid-template-columns: 1fr 1fr;
       gap: 0.5rem;
     }
-    .dual-input-box {
-      position: relative;
-    }
+    .dual-input-box { position: relative; }
     .input-symbol {
       position: absolute;
       left: 0.65rem;
@@ -490,9 +459,7 @@
       pointer-events: none;
       font-weight: 600;
     }
-    .dual-input-box input {
-      padding-left: 1.6rem !important;
-    }
+    .dual-input-box input { padding-left: 1.6rem !important; }
 
     .page-section { display: none; }
     .page-section.active { display: flex; flex-direction: column; flex: 1; }
@@ -745,7 +712,7 @@
           <input type="text" id="formTitle" required class="form-input">
         </div>
 
-        <!-- Simultaneous Dual-Currency Inputs -->
+        <!-- Dual-Currency Inputs (Only shown for Expense) -->
         <div class="form-group" id="amountContainer">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
             <label class="form-label" style="margin-bottom: 0;">Amount Spent (USD & KHR)</label>
@@ -754,15 +721,15 @@
           <div class="dual-input-row">
             <div class="dual-input-box">
               <span class="input-symbol">$</span>
-              <input type="number" step="0.01" min="0" id="formAmountUSD" placeholder="0.00" class="form-input" oninput="syncFromUSD(this.value)">
+              <input type="number" step="any" min="0" id="formAmountUSD" placeholder="0.00" class="form-input" oninput="syncFromUSD(this.value)">
             </div>
             <div class="dual-input-box">
               <span class="input-symbol">៛</span>
-              <input type="number" step="100" min="0" id="formAmountKHR" placeholder="0" class="form-input" oninput="syncFromKHR(this.value)">
+              <input type="number" step="any" min="0" id="formAmountKHR" placeholder="0" class="form-input" oninput="syncFromKHR(this.value)">
             </div>
           </div>
           <p style="font-size: 0.65rem; color: #737373; margin-top: 0.25rem;">
-            Type either USD or Riel; both update together automatically.
+            Type in either USD or Riel; the other converts automatically.
           </p>
         </div>
 
@@ -874,7 +841,7 @@
             <span id="rateSyncDate" style="font-size: 0.65rem; color: #737373;">Cached locally</span>
           </div>
           <p style="font-size: 0.65rem; color: #737373; margin-top: 0.25rem;">
-            Both currencies remain calculated together offline automatically.
+            Both currencies calculate together offline automatically.
           </p>
         </div>
 
@@ -1181,11 +1148,10 @@
       if (hint) hint.textContent = `$1 = ${state.exchangeRateKHR.toLocaleString()}៛`;
     }
 
-    // Two-way instant input synchronization
     function syncFromUSD(usdStr) {
       const usd = parseFloat(usdStr);
       const khrInput = document.getElementById('formAmountKHR');
-      if (!usdStr || isNaN(usd)) {
+      if (!usdStr || isNaN(usd) || usd < 0) {
         khrInput.value = '';
         return;
       }
@@ -1195,7 +1161,7 @@
     function syncFromKHR(khrStr) {
       const khr = parseFloat(khrStr);
       const usdInput = document.getElementById('formAmountUSD');
-      if (!khrStr || isNaN(khr)) {
+      if (!khrStr || isNaN(khr) || khr < 0) {
         usdInput.value = '';
         return;
       }
@@ -1325,7 +1291,7 @@
       container.innerHTML = '';
       const filter = (document.getElementById('notesSearchInput').value || '').toLowerCase();
 
-      const filtered = state.workNotes.filter(n => 
+      const filtered = (state.workNotes || []).filter(n => 
         (n.title && n.title.toLowerCase().includes(filter)) || 
         (n.content && n.content.toLowerCase().includes(filter))
       );
@@ -1568,40 +1534,17 @@
       return formatDateKey(new Date());
     }
 
+    // --- Clean LoadStorage (No more mock/dummy auto-generation) ---
     function loadStorage() {
       try {
         const storedLogs = localStorage.getItem(STORAGE_KEY);
-        if (storedLogs) {
-          state.logs = JSON.parse(storedLogs);
-        } else {
-          const today = getTodayDateString();
-          state.logs = {
-            [today]: [
-              { id: 'm_1', type: 'clockin', time: '08:30', title: 'Work In', notes: 'Morning start' },
-              { id: 'm_2', type: 'meal', time: '12:15', title: 'Lunch', notes: 'Chicken Rice' }
-            ]
-          };
-          saveStorage();
-        }
+        state.logs = storedLogs ? JSON.parse(storedLogs) : {};
 
         const storedShift = localStorage.getItem(ACTIVE_SHIFT_KEY);
-        if (storedShift) state.activeShift = JSON.parse(storedShift);
+        state.activeShift = storedShift ? JSON.parse(storedShift) : null;
 
         const storedWorkNotes = localStorage.getItem(WORK_NOTES_KEY);
-        if (storedWorkNotes) {
-          state.workNotes = JSON.parse(storedWorkNotes);
-        } else {
-          state.workNotes = [
-            {
-              id: 'initial_doc_1',
-              title: 'Welcome to Work Notes',
-              content: 'Write job remarks, specs, or client notes here. Use the translate button when online, and it stays saved forever offline!',
-              dateFormatted: 'Today',
-              timestamp: Date.now()
-            }
-          ];
-          saveStorage();
-        }
+        state.workNotes = storedWorkNotes ? JSON.parse(storedWorkNotes) : [];
       } catch (e) {
         state.logs = {};
         state.workNotes = [];
@@ -1609,12 +1552,16 @@
     }
 
     function saveStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.logs));
-      localStorage.setItem(WORK_NOTES_KEY, JSON.stringify(state.workNotes));
-      if (state.activeShift) {
-        localStorage.setItem(ACTIVE_SHIFT_KEY, JSON.stringify(state.activeShift));
-      } else {
-        localStorage.removeItem(ACTIVE_SHIFT_KEY);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.logs));
+        localStorage.setItem(WORK_NOTES_KEY, JSON.stringify(state.workNotes));
+        if (state.activeShift) {
+          localStorage.setItem(ACTIVE_SHIFT_KEY, JSON.stringify(state.activeShift));
+        } else {
+          localStorage.removeItem(ACTIVE_SHIFT_KEY);
+        }
+      } catch (e) {
+        showToast("Storage quota exceeded! Delete old photos.", true);
       }
     }
 
@@ -1772,7 +1719,6 @@
         if (item.type === 'expense' && item.amount) {
           const usdVal = parseFloat(item.amount);
           const khrEquivalent = Math.round(usdVal * state.exchangeRateKHR).toLocaleString();
-          // Simultaneous dual display
           costStr = `<span style="color: #34d399; font-weight: bold; margin-left: 0.35rem; font-family: monospace;">$${usdVal.toFixed(2)} • ${khrEquivalent}៛</span>`;
         }
 
@@ -1900,14 +1846,21 @@
       const time = document.getElementById('formTime').value;
       const title = document.getElementById('formTitle').value.trim();
       const notes = document.getElementById('formNotes').value.trim();
-      const usdVal = parseFloat(document.getElementById('formAmountUSD').value);
       const cat = document.getElementById('formCategory').value;
+
+      // Reliable input checks: compute either from USD or KHR input
+      const usdInputVal = parseFloat(document.getElementById('formAmountUSD').value);
+      const khrInputVal = parseFloat(document.getElementById('formAmountKHR').value);
 
       if (!state.logs[state.selectedDate]) state.logs[state.selectedDate] = [];
 
       let finalUsdAmount = undefined;
-      if (type === 'expense' && !isNaN(usdVal) && usdVal >= 0) {
-        finalUsdAmount = parseFloat(usdVal.toFixed(2));
+      if (type === 'expense') {
+        if (!isNaN(usdInputVal) && usdInputVal >= 0) {
+          finalUsdAmount = parseFloat(usdInputVal.toFixed(2));
+        } else if (!isNaN(khrInputVal) && khrInputVal >= 0) {
+          finalUsdAmount = parseFloat((khrInputVal / state.exchangeRateKHR).toFixed(2));
+        }
       }
 
       if (id) {
@@ -1978,7 +1931,7 @@
       });
 
       const mSpentKHR = Math.round(mSpentUSD * state.exchangeRateKHR);
-      document.getElementById('storageSummaryText').textContent = `${total} tracker logs, ${state.workNotes.length} notes`;
+      document.getElementById('storageSummaryText').textContent = `${total} tracker logs, ${(state.workNotes || []).length} notes`;
       document.getElementById('monthHoursSummary').textContent = `${mHours.toFixed(1)}h`;
       document.getElementById('monthSpendingSummary').textContent = `$${mSpentUSD.toFixed(2)} • ${mSpentKHR.toLocaleString()}៛`;
       updateExchangeRateUI();
