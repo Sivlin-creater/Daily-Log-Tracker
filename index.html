@@ -327,7 +327,7 @@
     .badge-slate { background: #262626; border-color: #404040; color: #d4d4d4; }
     .badge-cyan { background: rgba(22, 78, 99, 0.6); border-color: rgba(6, 182, 212, 0.5); color: #67e8f9; }
 
-    /* Page 2: Work Notes & Images */
+    /* Page 2: Work Notes & Media */
     .notes-container {
       display: flex;
       flex-direction: column;
@@ -355,13 +355,45 @@
       color: #d4d4d4;
       white-space: pre-wrap;
     }
-    .note-image-preview {
-      width: 100%;
-      max-height: 200px;
-      object-fit: cover;
+
+    /* Media Grid */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+    .media-card {
+      position: relative;
       border-radius: 0.75rem;
+      overflow: hidden;
       border: 1px solid #262626;
-      margin-top: 0.25rem;
+      background: #000;
+      height: 120px;
+    }
+    .media-card img, .media-card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .media-card video {
+      object-fit: contain;
+    }
+    .media-card .del-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      padding: 0.3rem;
+      border-radius: 9999px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fb7185;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
     }
 
     .translate-bar {
@@ -419,6 +451,8 @@
       max-width: 380px;
       padding: 1.25rem;
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .form-group { margin-bottom: 0.75rem; }
     .form-label {
@@ -472,6 +506,12 @@
       #printReportSection { display: block !important; }
     }
     #printReportSection { display: none; }
+
+    .icon-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -531,7 +571,7 @@
       </button>
       <button id="tabNotebookBtn" class="tab-btn" onclick="switchPage('notebook')">
         <i data-lucide="book-open" style="width: 1rem; height: 1rem;"></i>
-        <span id="tabNotebookLabel">Work Notes & Images</span>
+        <span id="tabNotebookLabel">Work Notes & Media</span>
       </button>
     </nav>
 
@@ -636,7 +676,7 @@
       </section>
     </div>
 
-    <!-- ================= PAGE 2: WORK NOTES & IMAGES ================= -->
+    <!-- ================= PAGE 2: WORK NOTES & MEDIA ================= -->
     <div id="pageNotebook" class="page-section">
       <!-- Search & New Note Header -->
       <div style="display: flex; gap: 0.5rem; margin-bottom: 0.85rem;">
@@ -750,7 +790,7 @@
     </div>
   </div>
 
-  <!-- Modal: Work Note & Photo Creator (Page 2) with Online Translation Support -->
+  <!-- Modal: Work Note & Multiple Photos/Videos Creator -->
   <div id="noteEditorModal" class="modal-overlay hidden">
     <div class="modal-card" style="max-width: 420px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
@@ -780,25 +820,21 @@
 
         <div class="form-group">
           <label class="form-label" id="workNoteTitleLabel">Topic / Headline</label>
-          <input type="text" id="workNoteTitle" required placeholder="e.g., Client order or design remarks..." class="form-input">
+          <input type="text" id="workNoteTitle" required placeholder="e.g., Client order or project remarks..." class="form-input">
         </div>
 
         <div class="form-group">
           <label class="form-label" id="workNoteContentLabel">Body & Description</label>
-          <textarea id="workNoteContent" rows="5" required placeholder="Type whatever details or job info you need..." class="form-textarea" style="resize: vertical;"></textarea>
+          <textarea id="workNoteContent" rows="4" required placeholder="Type notes or task info here..." class="form-textarea" style="resize: vertical;"></textarea>
         </div>
 
-        <!-- Image Upload Input -->
+        <!-- Multiple Images & Video Input -->
         <div class="form-group">
-          <label class="form-label" id="workNoteImageLabel">Attach Job Image / Photo (Saved Offline)</label>
-          <input type="file" id="workNoteFileInput" accept="image/*" onchange="previewSelectedImage(event)" class="form-input" style="font-size: 0.75rem; padding: 0.35rem 0.5rem;">
+          <label class="form-label">Attach Photos & Videos (Multiple Allowed)</label>
+          <input type="file" id="workNoteFileInput" accept="image/*,video/*" multiple onchange="handleMediaFilesSelected(event)" class="form-input" style="font-size: 0.75rem; padding: 0.35rem 0.5rem;">
           
-          <div id="imagePreviewContainer" style="display: none; margin-top: 0.5rem; position: relative;">
-            <img id="imagePreviewDisplay" class="note-image-preview" alt="Attachment Preview">
-            <button type="button" onclick="removeSelectedImage()" class="icon-btn rose" style="position: absolute; top: 6px; right: 6px; padding: 0.35rem; background: rgba(0,0,0,0.8);" title="Remove Image">
-              <i data-lucide="trash" style="width: 0.8rem; height: 0.8rem;"></i>
-            </button>
-          </div>
+          <!-- Media Preview Grid inside Modal -->
+          <div id="modalMediaPreviewGrid" class="media-grid"></div>
         </div>
 
         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
@@ -917,10 +953,64 @@
     const RATE_KEY = 'daily_tracker_exchange_rate_khr';
     const RATE_TIME_KEY = 'daily_tracker_exchange_rate_updated';
 
+    // --- IndexedDB Configuration for Unlimited Offline Media ---
+    const DB_NAME = 'DailyTrackerMediaDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'media_files';
+    let dbInstance = null;
+
+    function openMediaDB() {
+      return new Promise((resolve, reject) => {
+        if (dbInstance) return resolve(dbInstance);
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = (e) => {
+          dbInstance = e.target.result;
+          resolve(dbInstance);
+        };
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    async function saveMediaToDB(mediaObj) {
+      const db = await openMediaDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(mediaObj);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e);
+      });
+    }
+
+    async function getMediaFromDB(id) {
+      const db = await openMediaDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).get(id);
+        req.onsuccess = () => resolve(req.result ? req.result.data : null);
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    async function deleteMediaFromDB(id) {
+      const db = await openMediaDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e);
+      });
+    }
+
     const i18n = {
       en: {
         tabTracker: "Daily Tracker",
-        tabNotebook: "Work Notes & Images",
+        tabNotebook: "Work Notes & Media",
         weekDays: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
         months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
         today: "Today",
@@ -970,15 +1060,15 @@
         confirmClear: "Are you sure you want to erase all stored entries?",
         newNote: "Write Note",
         searchNotes: "Search work notes...",
-        noWorkNotes: "No work notes or images yet.",
-        noWorkNotesSub: "Tap 'Write Note' above to write whatever words, customer requests, or attach photos for your job.",
+        noWorkNotes: "No work notes or media yet.",
+        noWorkNotesSub: "Tap 'Write Note' above to record job tasks, specifications, or upload multiple photos and videos.",
         translating: "Translating...",
         translateSuccess: "Translation appended & ready to save!",
         translateOffline: "You are offline. Connect to Wi-Fi/data to translate text."
       },
       km: {
         tabTracker: "កាលវិភាគ & ម៉ោង",
-        tabNotebook: "កំណត់ត្រាការងារ & រូបភាព",
+        tabNotebook: "កំណត់ត្រាការងារ & មេឌៀ",
         weekDays: ["អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហ", "សុក្រ", "សៅរ៍"],
         months: ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"],
         today: "ថ្ងៃនេះ",
@@ -1028,15 +1118,15 @@
         confirmClear: "តើអ្នកប្រាកដជាចង់លុបទិន្នន័យទាំងអស់មែនទេ?",
         newNote: "សរសេរកំណត់ត្រា",
         searchNotes: "ស្វែងរកកំណត់ត្រាការងារ...",
-        noWorkNotes: "មិនទាន់មានកំណត់ត្រា ឬរូបភាពការងារនៅឡើយទេ។",
-        noWorkNotesSub: "ចុចប៊ូតុង 'សរសេរកំណត់ត្រា' ខាងលើដើម្បីសរសេរព័ត៌មានការងារ ឬបញ្ចូលរូបភាព។",
+        noWorkNotes: "មិនទាន់មានកំណត់ត្រា ឬវីដេអូរូបភាពនៅឡើយទេ។",
+        noWorkNotesSub: "ចុចប៊ូតុង 'សរសេរកំណត់ត្រា' ខាងលើដើម្បីសរសេរព័ត៌មានការងារ ឬបញ្ចូលរូបភាព និងវីដេអូច្រើន។",
         translating: "កំពុងបកប្រែ...",
         translateSuccess: "បានបកប្រែជោគជ័យ! រួចរាល់សម្រាប់រក្សាទុក។",
         translateOffline: "អ្នកកំពុង Offline។ សូមភ្ជាប់អ៊ីនធឺណិតដើម្បីបកប្រែអត្ថបទ។"
       },
       zh: {
         tabTracker: "工时与账目",
-        tabNotebook: "工作便签与图片",
+        tabNotebook: "工作便签与媒体",
         weekDays: ["日", "一", "二", "三", "四", "五", "六"],
         months: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
         today: "今天",
@@ -1086,8 +1176,8 @@
         confirmClear: "确定要清空所有记录吗？",
         newNote: "写工作笔记",
         searchNotes: "搜索工作笔记与记录...",
-        noWorkNotes: "暂无工作便签或图片。",
-        noWorkNotesSub: "点击上方“写工作笔记”，自由记录工作详情、文案并附带照片。",
+        noWorkNotes: "暂无工作便签或视频图片。",
+        noWorkNotesSub: "点击上方“写工作笔记”，自由记录工作详情、文案并附带多个照片和视频。",
         translating: "正在翻译...",
         translateSuccess: "已翻译！可直接保存到本地离线存储。",
         translateOffline: "当前处于离线状态。请连接网络后使用在线翻译功能。"
@@ -1104,7 +1194,7 @@
       lastNotified: {},
       logs: {},
       workNotes: [],
-      currentImageBase64: null,
+      editingMediaList: [], // Array of { id, type: 'image'|'video', data }
       exchangeRateKHR: parseFloat(localStorage.getItem(RATE_KEY)) || 4050,
       exchangeRateUpdated: localStorage.getItem(RATE_TIME_KEY) || null
     };
@@ -1285,8 +1375,66 @@
       }
     }
 
-    // --- Page 2: Work Notes Logic ---
-    function renderWorkNotes() {
+    // --- Media Handler (Multi-Image & Video) ---
+    function handleMediaFilesSelected(e) {
+      const files = Array.from(e.target.files);
+      if (!files || files.length === 0) return;
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        const isVideo = file.type.startsWith('video/');
+        reader.onload = function(evt) {
+          state.editingMediaList.push({
+            id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            type: isVideo ? 'video' : 'image',
+            data: evt.target.result
+          });
+          renderModalMediaPreview();
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = '';
+    }
+
+    function removeMediaFromEditing(id) {
+      state.editingMediaList = state.editingMediaList.filter(m => m.id !== id);
+      renderModalMediaPreview();
+    }
+
+    function renderModalMediaPreview() {
+      const container = document.getElementById('modalMediaPreviewGrid');
+      container.innerHTML = '';
+
+      state.editingMediaList.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'media-card';
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'del-btn';
+        delBtn.innerHTML = '<i data-lucide="x" style="width: 0.85rem; height: 0.85rem;"></i>';
+        delBtn.onclick = () => removeMediaFromEditing(m.id);
+
+        if (m.type === 'video') {
+          const video = document.createElement('video');
+          video.src = m.data;
+          video.controls = true;
+          video.playsInline = true;
+          card.appendChild(video);
+        } else {
+          const img = document.createElement('img');
+          img.src = m.data;
+          card.appendChild(img);
+        }
+
+        card.appendChild(delBtn);
+        container.appendChild(card);
+      });
+      refreshIcons();
+    }
+
+    // --- Page 2: Work Notes Logic with Search-Safe Reordering ---
+    async function renderWorkNotes() {
       const container = document.getElementById('workNotesList');
       container.innerHTML = '';
       const filter = (document.getElementById('notesSearchInput').value || '').toLowerCase();
@@ -1306,11 +1454,36 @@
         return;
       }
 
-      filtered.forEach(note => {
+      const isSearching = filter.length > 0;
+
+      for (let i = 0; i < filtered.length; i++) {
+        const note = filtered[i];
         const card = document.createElement('div');
         card.className = 'note-post';
 
-        const imgHtml = note.image ? `<img src="${note.image}" class="note-image-preview" alt="Attachment">` : '';
+        let mediaGridHtml = '<div class="media-grid">';
+        if (note.mediaIds && note.mediaIds.length > 0) {
+          for (const item of note.mediaIds) {
+            const dataUrl = await getMediaFromDB(item.id);
+            if (dataUrl) {
+              if (item.type === 'video') {
+                mediaGridHtml += `
+                  <div class="media-card">
+                    <video src="${dataUrl}" controls playsinline preload="metadata"></video>
+                  </div>`;
+              } else {
+                mediaGridHtml += `
+                  <div class="media-card">
+                    <img src="${dataUrl}" alt="Attachment" onclick="window.open('${dataUrl}')" style="cursor: pointer;">
+                  </div>`;
+              }
+            }
+          }
+        }
+        mediaGridHtml += '</div>';
+
+        const isFirst = i === 0 || isSearching;
+        const isLast = i === filtered.length - 1 || isSearching;
 
         card.innerHTML = `
           <div class="note-post-header">
@@ -1318,18 +1491,41 @@
               <h4 class="note-post-title">${escapeHtml(note.title)}</h4>
               <p class="note-post-date">${note.dateFormatted || ''}</p>
             </div>
-            <div style="display: flex; gap: 0.25rem;">
+            <div style="display: flex; gap: 0.25rem; align-items: center;">
+              <!-- Move Up & Down Buttons -->
+              <button onclick="moveWorkNote('${note.id}', -1)" class="icon-btn" style="padding: 0.35rem;" title="Move Up" ${isFirst ? 'disabled' : ''}>
+                <i data-lucide="arrow-up" style="width: 0.8rem; height: 0.8rem;"></i>
+              </button>
+              <button onclick="moveWorkNote('${note.id}', 1)" class="icon-btn" style="padding: 0.35rem;" title="Move Down" ${isLast ? 'disabled' : ''}>
+                <i data-lucide="arrow-down" style="width: 0.8rem; height: 0.8rem;"></i>
+              </button>
               <button onclick="editWorkNote('${note.id}')" class="icon-btn" style="padding: 0.35rem;"><i data-lucide="pencil" style="width: 0.8rem; height: 0.8rem;"></i></button>
               <button onclick="deleteWorkNote('${note.id}')" class="icon-btn rose" style="padding: 0.35rem;"><i data-lucide="trash-2" style="width: 0.8rem; height: 0.8rem;"></i></button>
             </div>
           </div>
           <p class="note-post-body">${escapeHtml(note.content)}</p>
-          ${imgHtml}
+          ${note.mediaIds && note.mediaIds.length > 0 ? mediaGridHtml : ''}
         `;
         container.appendChild(card);
-      });
+      }
 
       refreshIcons();
+    }
+
+    function moveWorkNote(id, direction) {
+      const idx = state.workNotes.findIndex(n => n.id === id);
+      if (idx === -1) return;
+
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= state.workNotes.length) return;
+
+      const temp = state.workNotes[idx];
+      state.workNotes[idx] = state.workNotes[targetIdx];
+      state.workNotes[targetIdx] = temp;
+
+      playBeep(650, 0.08);
+      saveStorage();
+      renderWorkNotes();
     }
 
     function openNoteEditorModal() {
@@ -1337,13 +1533,13 @@
       document.getElementById('workNoteTitle').value = '';
       document.getElementById('workNoteContent').value = '';
       document.getElementById('workNoteFileInput').value = '';
-      state.currentImageBase64 = null;
-      document.getElementById('imagePreviewContainer').style.display = 'none';
+      state.editingMediaList = [];
+      renderModalMediaPreview();
       document.getElementById('noteModalHeader').textContent = t('newNote');
       openModal('noteEditorModal');
     }
 
-    function editWorkNote(id) {
+    async function editWorkNote(id) {
       const note = state.workNotes.find(n => n.id === id);
       if (!note) return;
 
@@ -1351,45 +1547,35 @@
       document.getElementById('workNoteTitle').value = note.title || '';
       document.getElementById('workNoteContent').value = note.content || '';
       document.getElementById('workNoteFileInput').value = '';
-      state.currentImageBase64 = note.image || null;
-
-      if (note.image) {
-        document.getElementById('imagePreviewDisplay').src = note.image;
-        document.getElementById('imagePreviewContainer').style.display = 'block';
-      } else {
-        document.getElementById('imagePreviewContainer').style.display = 'none';
+      
+      state.editingMediaList = [];
+      if (note.mediaIds && note.mediaIds.length > 0) {
+        for (const item of note.mediaIds) {
+          const data = await getMediaFromDB(item.id);
+          if (data) {
+            state.editingMediaList.push({ id: item.id, type: item.type, data });
+          }
+        }
       }
 
+      renderModalMediaPreview();
       document.getElementById('noteModalHeader').textContent = t('editEntry');
       openModal('noteEditorModal');
     }
 
-    function previewSelectedImage(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        state.currentImageBase64 = e.target.result;
-        document.getElementById('imagePreviewDisplay').src = e.target.result;
-        document.getElementById('imagePreviewContainer').style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function removeSelectedImage() {
-      state.currentImageBase64 = null;
-      document.getElementById('workNoteFileInput').value = '';
-      document.getElementById('imagePreviewContainer').style.display = 'none';
-    }
-
-    function handleSaveWorkNote(e) {
+    async function handleSaveWorkNote(e) {
       e.preventDefault();
       const id = document.getElementById('workNoteId').value;
       const title = document.getElementById('workNoteTitle').value.trim();
       const content = document.getElementById('workNoteContent').value.trim();
       const now = new Date();
       const dateFormatted = `${now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })} • ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      const mediaDescriptors = [];
+      for (const m of state.editingMediaList) {
+        await saveMediaToDB({ id: m.id, type: m.type, data: m.data });
+        mediaDescriptors.push({ id: m.id, type: m.type });
+      }
 
       if (id) {
         const index = state.workNotes.findIndex(n => n.id === id);
@@ -1398,7 +1584,7 @@
             ...state.workNotes[index],
             title,
             content,
-            image: state.currentImageBase64,
+            mediaIds: mediaDescriptors,
             dateFormatted
           };
           showToast(t('entryUpdated'));
@@ -1408,7 +1594,7 @@
           id: 'note_' + Date.now(),
           title,
           content,
-          image: state.currentImageBase64,
+          mediaIds: mediaDescriptors,
           dateFormatted,
           timestamp: Date.now()
         });
@@ -1420,7 +1606,13 @@
       renderWorkNotes();
     }
 
-    function deleteWorkNote(id) {
+    async function deleteWorkNote(id) {
+      const note = state.workNotes.find(n => n.id === id);
+      if (note && note.mediaIds) {
+        for (const m of note.mediaIds) {
+          await deleteMediaFromDB(m.id);
+        }
+      }
       state.workNotes = state.workNotes.filter(n => n.id !== id);
       saveStorage();
       renderWorkNotes();
@@ -1534,7 +1726,6 @@
       return formatDateKey(new Date());
     }
 
-    // --- Clean LoadStorage (No more mock/dummy auto-generation) ---
     function loadStorage() {
       try {
         const storedLogs = localStorage.getItem(STORAGE_KEY);
@@ -1561,7 +1752,7 @@
           localStorage.removeItem(ACTIVE_SHIFT_KEY);
         }
       } catch (e) {
-        showToast("Storage quota exceeded! Delete old photos.", true);
+        showToast("Storage quota exceeded!", true);
       }
     }
 
@@ -1848,7 +2039,6 @@
       const notes = document.getElementById('formNotes').value.trim();
       const cat = document.getElementById('formCategory').value;
 
-      // Reliable input checks: compute either from USD or KHR input
       const usdInputVal = parseFloat(document.getElementById('formAmountUSD').value);
       const khrInputVal = parseFloat(document.getElementById('formAmountKHR').value);
 
@@ -2010,13 +2200,23 @@
       setTimeout(() => window.print(), 150);
     }
 
-    function exportDataAsJSON() {
+    async function exportDataAsJSON() {
+      const db = await openMediaDB();
+      const allMedia = await new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+
       const fullBackup = {
         logs: state.logs,
         workNotes: state.workNotes,
-        exchangeRateKHR: state.exchangeRateKHR
+        exchangeRateKHR: state.exchangeRateKHR,
+        mediaDatabase: allMedia
       };
-      const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
+
+      const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup));
       const a = document.createElement('a');
       a.href = str;
       a.download = `backup_full_${getTodayDateString()}.json`;
@@ -2027,13 +2227,19 @@
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(evt) {
+      reader.onload = async function(evt) {
         try {
           const parsed = JSON.parse(evt.target.result);
           if (parsed.logs || parsed.workNotes) {
             state.logs = parsed.logs || {};
             state.workNotes = parsed.workNotes || [];
             if (parsed.exchangeRateKHR) state.exchangeRateKHR = parsed.exchangeRateKHR;
+
+            if (parsed.mediaDatabase && Array.isArray(parsed.mediaDatabase)) {
+              for (const item of parsed.mediaDatabase) {
+                await saveMediaToDB(item);
+              }
+            }
           } else {
             state.logs = parsed;
           }
@@ -2051,12 +2257,15 @@
       reader.readAsText(file);
     }
 
-    function confirmClearAllData() {
+    async function confirmClearAllData() {
       if (window.confirm(t('confirmClear'))) {
         state.logs = {};
         state.workNotes = [];
         state.activeShift = null;
         saveStorage();
+        const db = await openMediaDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).clear();
         renderHeader();
         renderCalendar();
         renderTimeline();
